@@ -1,0 +1,29 @@
+# ===== JAVA / SPRING BOOT =====
+backend/target/
+backend/*.jar
+backend/*.war
+backend/.mvn/wrapper/maven-wrapper.jar
+
+# ===== ANGULAR =====
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# ===== ENVIRONMENT / SECRETS =====
+.env
+.env.local
+.env.prod
+**/application-prod.yml
+**/application-local.yml
+
+# ===== IDE =====
+.idea/
+*.iml
+.vscode/settings.json
+
+# ===== DOCKER =====
+docker-compose.override.yml
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
