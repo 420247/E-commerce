@@ -1,4 +1,6 @@
--- Sample products for testing and demo purposes
+-- Sample products for development and demo purposes.
+-- Images from Unsplash (free to use).
+-- Covers 5 categories: electronics, clothing, books, sports, home.
 INSERT INTO products (name, description, price, category, rating, image_url, stock) VALUES
 ('iPhone 15 Pro', 'Apple iPhone 15 Pro 256GB, Titanium', 1199.99, 'electronics', 4.8, 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400', 50),
 ('Samsung Galaxy S24', 'Samsung Galaxy S24 128GB, Phantom Black', 899.99, 'electronics', 4.6, 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400', 35),
