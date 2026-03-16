@@ -55,6 +55,7 @@ public class SecurityConfig {
                 // Public endpoints — no token required
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/products/**").permitAll()
+                .requestMatchers("/api/ai/**").permitAll()
                 // All other endpoints require a valid JWT token
                 .anyRequest().authenticated()
             )
