@@ -1,0 +1,19 @@
+.brand {
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: white;
+}
+
+.spacer {
+  flex: 1 1 auto; // pushes navigation links to the right
+}
+
+.active-link {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+mat-icon {
+  margin-right: 4px;
+}

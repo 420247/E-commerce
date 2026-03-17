@@ -1,0 +1,33 @@
+<mat-toolbar color="primary">
+  <!-- App title / home link -->
+  <a routerLink="/products" class="brand">🛍️ E-Commerce</a>
+
+  <span class="spacer"></span>
+
+  <!-- Products navigation link -->
+  <a mat-button routerLink="/products" routerLinkActive="active-link">
+    <mat-icon>storefront</mat-icon>
+    Products
+  </a>
+
+  <!-- Wishlist — only visible when logged in -->
+  @if (authService.isLoggedIn()) {
+    <a mat-button routerLink="/wishlist" routerLinkActive="active-link">
+      <mat-icon [matBadge]="wishlistCount()" [matBadgeHidden]="wishlistCount() === 0" matBadgeColor="accent">
+        favorite
+      </mat-icon>
+      Wishlist
+    </a>
+
+    <button mat-button (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      Logout
+    </button>
+  }
+
+  <!-- Login / Register — only visible when not logged in -->
+  @if (!authService.isLoggedIn()) {
+    <a mat-button routerLink="/auth/login" routerLinkActive="active-link">Login</a>
+    <a mat-button routerLink="/auth/register" routerLinkActive="active-link">Register</a>
+  }
+</mat-toolbar>
