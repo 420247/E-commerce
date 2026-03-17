@@ -32,7 +32,9 @@ application:
       secret-key: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970 # HEX-encoded HMAC-SHA256 key — replace in production via env variable
       expiration: 900000         # access token lifetime: 15 minutes (900000 ms)
       refresh-expiration: 604800000 # refresh token lifetime: 7 days (604800000 ms)
-
+  anthropic:
+    api-key: ${ANTHROPIC_API_KEY}
+    model: claude-sonnet-4-20250514
 server:
   port: 8080 # backend runs on port 8080, Angular dev server runs on 4200
   

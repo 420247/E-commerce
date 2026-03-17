@@ -6,6 +6,7 @@ import com.shop.ecommerce.dto.AiSearchResponse;
 import com.shop.ecommerce.model.Product;
 import com.shop.ecommerce.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +26,10 @@ import java.util.List;
  * 2. We send query + available categories to Claude
  * 3. Claude returns structured filters as JSON
  * 4. We query DB with those filters and return results
+ *
+ * @Slf4j — Lombok: generates a logger field, use log.info(), log.error() etc.
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AiSearchService {
@@ -86,30 +90,61 @@ public class AiSearchService {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.anthropic.com/v1/messages"))
                 .header("Content-Type", "application/json")
-                .header("x-api-key", apiKey)                    // Anthropic API key
-                .header("anthropic-version", "2023-06-01")      // required API version header
+                .header("x-api-key", apiKey)               // Anthropic API key
+                .header("anthropic-version", "2023-06-01") // required API version header
                 .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                 .build();
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
+        // Log raw response for debugging
+        log.info("Claude HTTP status: {}", response.statusCode());
+        log.info("Claude raw response: {}", response.body());
+
         // Parse Claude's response
         JsonNode responseJson = objectMapper.readTree(response.body());
+
+        // Check for API errors — Anthropic returns {"type": "error", "error": {...}} on failure
+        if (responseJson.has("error")) {
+            String errorMsg = responseJson.path("error").path("message").asText();
+            log.error("Anthropic API error: {}", errorMsg);
+            throw new RuntimeException("Claude API error: " + errorMsg);
+        }
+
+        // Validate response structure before accessing content
+        if (!responseJson.has("content") || responseJson.path("content").size() == 0) {
+            log.error("Unexpected Claude response structure: {}", response.body());
+            throw new RuntimeException("Unexpected response from Claude API");
+        }
+
+        // Extract text from Claude's response content array
         String claudeText = responseJson
                 .path("content").get(0)
                 .path("text").asText();
 
+        log.info("Claude extracted text: {}", claudeText);
+
         // Parse the JSON filters Claude returned
         JsonNode filters = objectMapper.readTree(claudeText);
 
-        String category = filters.path("category").isNull() ? null : filters.path("category").asText();
-        BigDecimal minPrice = filters.path("minPrice").isNull() ? null : new BigDecimal(filters.path("minPrice").asText());
-        BigDecimal maxPrice = filters.path("maxPrice").isNull() ? null : new BigDecimal(filters.path("maxPrice").asText());
-        BigDecimal minRating = filters.path("minRating").isNull() ? null : new BigDecimal(filters.path("minRating").asText());
-        String explanation = filters.path("explanation").asText();
+        // Extract filters — use null if not present or explicitly null
+        String category = filters.path("category").isNull() || filters.path("category").isMissingNode()
+                ? null : filters.path("category").asText();
+        BigDecimal minPrice = filters.path("minPrice").isNull() || filters.path("minPrice").isMissingNode()
+                ? null : new BigDecimal(filters.path("minPrice").asText());
+        BigDecimal maxPrice = filters.path("maxPrice").isNull() || filters.path("maxPrice").isMissingNode()
+                ? null : new BigDecimal(filters.path("maxPrice").asText());
+        BigDecimal minRating = filters.path("minRating").isNull() || filters.path("minRating").isMissingNode()
+                ? null : new BigDecimal(filters.path("minRating").asText());
+        String explanation = filters.path("explanation").asText("No explanation provided");
+
+        log.info("Extracted filters — category: {}, minPrice: {}, maxPrice: {}, minRating: {}",
+                category, minPrice, maxPrice, minRating);
 
         // Query DB with extracted filters
         List<Product> products = productRepository.findWithFilters(category, minPrice, maxPrice, minRating);
+
+        log.info("Found {} products for query: {}", products.size(), query);
 
         return new AiSearchResponse(products, explanation);
     }
