@@ -1,94 +1,55 @@
-import { Injectable, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
-import { tap } from 'rxjs/operators';
-import { AuthResponse, LoginRequest, RegisterRequest, User } from '../../shared/models/user.model';
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { Product, ProductFilter, AiSearchResponse } from '../../shared/models/product.model';
 import { environment } from '../../../environments/environment';
 
 /**
- * Handles all authentication logic: registration, login, logout, and session restoration.
- *
- * Tokens are stored in localStorage so the session persists across browser refreshes.
- * On app start, the service reads the stored token and restores the user state automatically.
- *
- * `providedIn: 'root'` — Angular creates a single instance shared across the whole app (singleton).
+ * Handles all product-related HTTP requests to the backend.
+ * Provides methods for fetching products with filters and performing AI-powered search.
  */
 @Injectable({ providedIn: 'root' })
-export class AuthService {
+export class ProductService {
+
+  private apiUrl = `${environment.apiUrl}/products`;
+  private aiUrl = `${environment.apiUrl}/ai`;
+
+  constructor(private http: HttpClient) {}
 
   /**
-   * Reactive signal holding the currently authenticated user.
-   * Components that read `currentUser()` automatically re-render when it changes.
-   * Null means no user is logged in.
+   * Fetches products from GET /api/products with optional filters.
+   * Only defined filter fields are appended as query parameters.
+   *
+   * @example
+   * // GET /api/products?category=electronics&maxPrice=500
+   * this.productService.getProducts({ category: 'electronics', maxPrice: 500 });
    */
-  currentUser = signal<User | null>(null);
-
-  private apiUrl = `${environment.apiUrl}/auth`;
-
-  constructor(private http: HttpClient, private router: Router) {
-    this.loadUserFromToken();
-  }
-
-  /**
-   * Registers a new user account and saves the returned JWT tokens.
-   * Returns an Observable — must be subscribed to in the component.
-   */
-  register(request: RegisterRequest) {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, request).pipe(
-      tap(response => this.saveTokens(response))
-    );
-  }
-
-  /**
-   * Authenticates an existing user and saves the returned JWT tokens.
-   * Returns an Observable — must be subscribed to in the component.
-   */
-  login(request: LoginRequest) {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, request).pipe(
-      tap(response => this.saveTokens(response))
-    );
-  }
-
-  /** Clears tokens from storage, resets user state, and redirects to the login page. */
-  logout() {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    this.currentUser.set(null);
-    this.router.navigate(['/auth/login']);
-  }
-
-  /** Returns the stored access token, or null if the user is not logged in. */
-  getAccessToken(): string | null {
-    return localStorage.getItem('accessToken');
-  }
-
-  /** Returns true if a valid access token exists in storage. */
-  isLoggedIn(): boolean {
-    return !!this.getAccessToken();
+  getProducts(filter?: ProductFilter): Observable<Product[]> {
+    let params = new HttpParams();
+    if (filter?.category) params = params.set('category', filter.category);
+    if (filter?.minPrice) params = params.set('minPrice', filter.minPrice);
+    if (filter?.maxPrice) params = params.set('maxPrice', filter.maxPrice);
+    if (filter?.minRating) params = params.set('minRating', filter.minRating);
+    return this.http.get<Product[]>(this.apiUrl, { params });
   }
 
   /**
-   * Decodes the JWT payload to restore user state from the stored token.
-   * A JWT has three Base64-encoded parts separated by dots: header.payload.signature.
-   * The payload contains the user's email (sub) and expiry (exp).
-   * No backend call is needed — all information is embedded in the token.
+   * Fetches a single product by ID from GET /api/products/:id.
+   * Used on the product detail page.
    */
-  private loadUserFromToken() {
-    const token = this.getAccessToken();
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        this.currentUser.set({ id: 0, email: payload.sub, name: '', role: 'USER' });
-      } catch {
-        this.logout();
-      }
-    }
+  getProductById(id: number): Observable<Product> {
+    return this.http.get<Product>(`${this.apiUrl}/${id}`);
   }
 
-  /** Persists tokens to localStorage and restores user state from the new access token. */
-  private saveTokens(response: AuthResponse) {
-    localStorage.setItem('accessToken', response.accessToken);
-    localStorage.setItem('refreshToken', response.refreshToken);
-    this.loadUserFromToken();
+  /**
+   * Sends a natural language query to POST /api/ai/search.
+   * The backend forwards the query to Claude, which extracts filters
+   * and returns matching products along with an explanation.
+   *
+   * @example
+   * this.productService.aiSearch('cheap phone with good camera under 500 euros');
+   */
+  aiSearch(query: string): Observable<AiSearchResponse> {
+    return this.http.post<AiSearchResponse>(`${this.aiUrl}/search`, { query });
   }
 }
