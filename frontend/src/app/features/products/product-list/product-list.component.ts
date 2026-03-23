@@ -1,4 +1,4 @@
-import { Component, OnInit} from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy} from '@angular/core';
 import { FormsModule, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { TitleCasePipe, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -28,6 +28,7 @@ import { Product, ProductFilter } from '../../../shared/models/product.model';
 @Component({
   selector: 'app-product-list',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 imports: [
     ReactiveFormsModule,
     FormsModule,
@@ -65,7 +66,8 @@ export class ProductListComponent implements OnInit {
     private productService: ProductService,
     public wishlistService: WishlistService,
     public authService: AuthService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private cdr: ChangeDetectorRef
   ) {
     this.filterForm = this.fb.group({
       category: [''],
@@ -99,9 +101,11 @@ export class ProductListComponent implements OnInit {
       next: (products) => {
         this.products = products;
         this.isLoading = false;
+        this.cdr.markForCheck(); // since we're using OnPush, we need to manually trigger change detection after async data loads
       },
       error: () => {
         this.isLoading = false;
+        this.cdr.markForCheck();
         this.snackBar.open('Failed to load products.', 'Close', { duration: 3000 });
       }
     });
