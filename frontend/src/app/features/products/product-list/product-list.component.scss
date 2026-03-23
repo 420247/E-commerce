@@ -1,0 +1,144 @@
+.page-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.ai-search-card {
+  background: linear-gradient(135deg, var(--mat-sys-primary-container), var(--mat-sys-surface));
+}
+
+.ai-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px;
+  font-size: 1.25rem;
+}
+
+.ai-subtitle {
+  margin: 0 0 16px;
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 0.875rem;
+}
+
+.ai-search-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+
+  .ai-input {
+    flex: 1;
+  }
+
+  button {
+    margin-top: 4px;
+    height: 56px;
+  }
+}
+
+.ai-explanation {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 12px;
+  background: var(--mat-sys-surface-variant);
+  border-radius: 8px;
+  font-size: 0.875rem;
+}
+
+.filters-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+
+  mat-form-field {
+    min-width: 160px;
+  }
+}
+
+.filter-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.product-card {
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
+}
+
+.product-image {
+  height: 200px;
+  object-fit: cover;
+}
+
+.product-name {
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 8px 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-category {
+  font-size: 0.75rem;
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0 0 8px;
+}
+
+.product-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+
+  .star-icon {
+    color: #f59e0b;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.product-price {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--mat-sys-primary);
+  margin: 0;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px;
+  color: var(--mat-sys-on-surface-variant);
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
+  }
+}

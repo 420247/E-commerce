@@ -14,10 +14,11 @@ import org.springframework.web.bind.annotation.*;
  * Handles user registration and login — returns JWT tokens on success.
  * Base URL: /api/auth
  */
+
 @RestController  // Marks class as REST controller — every method returns JSON automatically
 @RequestMapping("/api/auth") // All endpoints here start with /api/auth
-@RequiredArgsConstructor     // Lombok: generates constructor injection for all final fields
 @CrossOrigin(origins = "http://localhost:4200") // Allows Angular dev server to call this API (CORS)
+@RequiredArgsConstructor     // Lombok: generates constructor injection for all final fields
 public class AuthController {
 
     private final AuthService authService; // Injected by Spring — handles all auth business logic
