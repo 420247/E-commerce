@@ -78,7 +78,10 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         // Only allow requests from the Angular dev server
-        config.setAllowedOrigins(List.of("http://localhost:4200"));
+        config.setAllowedOrigins(List.of(
+            "http://localhost:4200",
+            "https://e-commerce-dmxk.onrender.com"
+            ));
 
         // Allow standard REST methods + OPTIONS (OPTIONS is used for preflight checks)
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
