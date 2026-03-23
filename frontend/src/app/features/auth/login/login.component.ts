@@ -17,7 +17,6 @@ import { WishlistService } from '../../../core/services/wishlist.service';
 @Component({
   selector: 'app-login',
   standalone: true,
-  template: `<p>Login page</p>`,
   imports: [
     ReactiveFormsModule,
     MatCardModule,

@@ -1,15 +1,94 @@
+# docker-compose.yml defines the full local development environment.
+# Run everything with a single command: docker compose up --build
+# Stop everything with: docker compose down
+
 services:
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # PostgreSQL database
+  # ───────────────────────────────────────────────────────────────────────────
   postgres:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: ecommerce-db
+
+    # Credentials are loaded from the .env file (never hardcoded here).
+    # .env is listed in .gitignore so secrets never reach the repository.
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB:       ${POSTGRES_DB}
+      POSTGRES_USER:     ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+    # Expose port 5432 to the host machine so you can connect with
+    # a database client like DBeaver or IntelliJ during development.
     ports:
       - "5432:5432"
+
+    # Data is stored in a named volume so it survives container restarts.
+    # Without this, the database would be empty every time you run docker compose up.
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+    # Health check polls the database until it is ready to accept connections.
+    # Other services use "depends_on: condition: service_healthy" to wait for
+    # this check to pass before starting — prevents "Connection refused" errors
+    # that happen when Spring Boot starts before the database is ready.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s   # check every 10 seconds
+      timeout: 5s     # give up after 5 seconds
+      retries: 5      # mark as unhealthy after 5 consecutive failures
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Spring Boot backend
+  # ───────────────────────────────────────────────────────────────────────────
+  backend:
+    # Build the image from backend/Dockerfile instead of pulling from a registry.
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ecommerce-backend
+
+    ports:
+      - "8080:8080"
+
+    # Spring Boot maps environment variables to application.yml properties.
+    # SPRING_DATASOURCE_URL overrides spring.datasource.url, etc.
+    # "postgres" in the URL resolves to the postgres container via Docker DNS —
+    # containers on the same Docker network can reach each other by service name.
+    environment:
+      SPRING_DATASOURCE_URL:      jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      ANTHROPIC_API_KEY:          ${ANTHROPIC_API_KEY}
+      APPLICATION_SECURITY_JWT_SECRET_KEY: ${JWT_SECRET}
+
+    # Wait for postgres to be healthy before starting the backend.
+    # Without this condition, Spring Boot might start before the database is
+    # ready and throw "Connection refused" on the first connection attempt.
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Angular frontend served by nginx
+  # ───────────────────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ecommerce-frontend
+
+    # Port 80 is the standard HTTP port — open http://localhost in the browser.
+    ports:
+      - "80:80"
+
+    # Frontend only needs the backend to be running, not necessarily healthy.
+    # nginx will proxy /api/* requests to the backend container.
+    depends_on:
+      - backend
+
+# Named volumes persist data between docker compose up / down cycles.
+# To completely reset the database: docker compose down -v
 volumes:
   postgres_data:
+  
