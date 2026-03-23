@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * WishlistItem entity — links a user to a saved product.
  * Mapped to the "wishlist_items" table.
@@ -33,13 +35,14 @@ public class WishlistItem {
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false) // FK column in wishlist_items table
+    @JsonIgnore // Prevents infinite recursion during JSON serialization (user → wishlist items → user → ...)
     private User user;
 
     /**
      * Many wishlist items can reference the same product.
      * @ManyToOne — many items → one product (foreign key: product_id)
      */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER) // Product details are needed immediately, so we load them with the item
     @JoinColumn(name = "product_id", nullable = false) // FK column in wishlist_items table
     private Product product;
 

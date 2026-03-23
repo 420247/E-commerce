@@ -9,6 +9,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -32,6 +34,7 @@ public class User implements UserDetails {
     @Column(nullable = false, unique = true) // Email must be unique
     private String email;
 
+    @JsonIgnore
     @Column(nullable = false) // Stored as bcrypt hash, never plain text
     private String password;
 
