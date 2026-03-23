@@ -16,7 +16,10 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/ai")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = {
+    "http://localhost:4200",
+    "https://e-commerce-dmxk.onrender.com"
+})
 public class AiSearchController {
 
     private final AiSearchService aiSearchService;
