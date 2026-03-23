@@ -11,7 +11,7 @@
 #   frontend ─┘
 # ─────────────────────────────────────────────────────────────────────────────
 
-
+  
 name: CI/CD
 
 on:
@@ -66,6 +66,9 @@ jobs:
           # restore from cache and complete 2-3 minutes faster.
           cache: maven
 
+      - name: Make mvnw executable
+        run: chmod +x backend/mvnw 
+        
       - name: Run tests
         working-directory: backend
         env:
