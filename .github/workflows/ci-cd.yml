@@ -1,0 +1,157 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# CI/CD Pipeline — GitHub Actions + Render
+#
+# What this pipeline does:
+#   1. On every push and pull request → run backend tests + frontend build
+#   2. On push to main only           → trigger deploy on Render
+#
+# Jobs run in parallel where possible:
+#   backend ──┐
+#             ├── deploy (only on main, only if both pass)
+#   frontend ─┘
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: CI/CD
+
+on:
+  # Run on every push to main — this is what triggers a deployment
+  push:
+    branches: [main]
+  # Run on every pull request targeting main — validates the code before merge
+  pull_request:
+    branches: [main]
+
+jobs:
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Job 1: Backend — compile, test, verify
+  # ───────────────────────────────────────────────────────────────────────────
+  backend:
+    name: Backend — build & test
+    runs-on: ubuntu-latest
+
+    # Spin up a real PostgreSQL instance as a Docker container alongside the job.
+    # Spring Boot will connect to this database during integration tests —
+    # the same way it connects in production, not with an in-memory database.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB:       ecommerce_test
+          POSTGRES_USER:     test
+          POSTGRES_PASSWORD: test
+        ports:
+          - 5432:5432
+        # GitHub Actions waits for this health check before running job steps.
+        # Without it, the job might start before Postgres is ready to accept
+        # connections, causing intermittent test failures.
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          # Cache the ~/.m2 Maven repository between workflow runs.
+          # First run downloads ~200 MB of dependencies. Subsequent runs
+          # restore from cache and complete 2-3 minutes faster.
+          cache: maven
+
+      - name: Run tests
+        working-directory: backend
+        env:
+          # Override application.yml values with test database credentials.
+          # Spring Boot's relaxed binding maps SPRING_DATASOURCE_URL
+          # to spring.datasource.url automatically.
+          SPRING_DATASOURCE_URL:      jdbc:postgresql://localhost:5432/ecommerce_test
+          SPRING_DATASOURCE_USERNAME: test
+          SPRING_DATASOURCE_PASSWORD: test
+          # Pull secrets from GitHub repository settings.
+          # These are never exposed in logs — GitHub masks them automatically.
+          APPLICATION_SECURITY_JWT_SECRET_KEY: ${{ secrets.JWT_SECRET }}
+          # Tests don't call the Claude API, so a dummy value prevents errors
+          # in case any test accidentally initialises the AI service bean.
+          APPLICATION_ANTHROPIC_API_KEY: dummy
+        # mvn verify runs the full lifecycle: compile → test → package → verify.
+        # If any test fails, this step fails and the pipeline stops here.
+        run: ./mvnw verify
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Job 2: Frontend — install dependencies and build
+  # ───────────────────────────────────────────────────────────────────────────
+  frontend:
+    name: Frontend — build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          # Tell the cache action where the lock file is so it can generate
+          # a unique cache key — a different lock file = different cache.
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        working-directory: frontend
+        # --frozen-lockfile: abort if pnpm-lock.yaml would need to be changed.
+        # This ensures CI builds the exact same dependency tree that was tested
+        # locally — no silent upgrades of transitive dependencies.
+        run: pnpm install --frozen-lockfile
+
+      - name: Build production bundle
+        working-directory: frontend
+        # Angular CLI compiles TypeScript, tree-shakes unused code, and outputs
+        # optimised static files to dist/frontend/browser/.
+        # If TypeScript has type errors or the build fails, this step fails.
+        run: pnpm build
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Job 3: Deploy — trigger Render to rebuild and redeploy
+  #
+  # This job only runs when:
+  #   - The event is a push (not a pull request)
+  #   - The branch is main
+  #   - Both backend and frontend jobs passed (needs: [backend, frontend])
+  #
+  # Render watches the GitHub repository and rebuilds automatically when
+  # a deploy hook URL is called with a POST request.
+  # ───────────────────────────────────────────────────────────────────────────
+  deploy:
+    name: Deploy to Render
+    runs-on: ubuntu-latest
+
+    # Only deploy after both CI jobs pass successfully.
+    # If backend tests fail, we never reach this job — broken code is never deployed.
+    needs: [backend, frontend]
+
+    # Only deploy on direct pushes to main, not on pull requests.
+    # Pull requests run the CI jobs above to validate the code,
+    # but we never deploy from a branch that hasn't been merged yet.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Deploy backend to Render
+        # curl -f makes curl return a non-zero exit code if the HTTP response
+        # is an error (4xx or 5xx), which causes the step to fail.
+        # Without -f, curl exits 0 even on HTTP 500 and the step appears green.
+        run: curl -f -X POST "${{ secrets.RENDER_BACKEND_DEPLOY_HOOK }}"
+
+      - name: Deploy frontend to Render
+        run: curl -f -X POST "${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK }}"
+        

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -20,6 +20,7 @@ import { Product } from '../../../shared/models/product.model';
 @Component({
   selector: 'app-product-detail',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     RouterLink,
     DecimalPipe,
@@ -42,7 +43,8 @@ export class ProductDetailComponent implements OnInit {
     private productService: ProductService,
     private snackBar: MatSnackBar,
     public wishlistService: WishlistService,
-    public authService: AuthService
+    public authService: AuthService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -61,8 +63,11 @@ export class ProductDetailComponent implements OnInit {
       next: (product) => {
         this.product = product;
         this.isLoading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
+        this.isLoading = false;
+        this.cdr.markForCheck();
         this.snackBar.open('Product not found.', 'Close', { duration: 3000 });
         this.router.navigate(['/products']);
       }
