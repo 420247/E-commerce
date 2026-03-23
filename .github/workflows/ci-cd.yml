@@ -11,6 +11,7 @@
 #   frontend ─┘
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 name: CI/CD
 
 on:
@@ -154,4 +155,3 @@ jobs:
 
       - name: Deploy frontend to Render
         run: curl -f -X POST "${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK }}"
-        
