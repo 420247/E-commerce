@@ -17,7 +17,10 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController  // Marks class as REST controller — every method returns JSON automatically
 @RequestMapping("/api/auth") // All endpoints here start with /api/auth
-@CrossOrigin(origins = "http://localhost:4200") // Allows Angular dev server to call this API (CORS)
+@CrossOrigin(origins = {
+    "http://localhost:4200",
+    "https://e-commerce-dmxk.onrender.com"
+})
 @RequiredArgsConstructor     // Lombok: generates constructor injection for all final fields
 public class AuthController {
 
