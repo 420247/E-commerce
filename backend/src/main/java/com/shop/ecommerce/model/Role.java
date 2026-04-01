@@ -1,10 +1,7 @@
 package com.shop.ecommerce.model;
 
-/**
- * User roles for authorization.
- * USER - regular customer, ADMIN - store manager.
- */
+/** User roles for authorization. USER - regular customer, ADMIN - store manager. */
 public enum Role {
-    USER,
-    ADMIN
+  USER,
+  ADMIN
 }
