@@ -77,7 +77,8 @@ export class ProductDetailComponent implements OnInit {
     if (!this.product) return;
 
     if (!this.authService.isLoggedIn()) {
-      this.snackBar.open('Please log in to save products.', 'Close', { duration: 3000 });
+      const ref = this.snackBar.open('Please log in to save products.', 'Login', { duration: 3000 });
+      ref.onAction().subscribe(() => this.router.navigate(['/auth/login']));
       return;
     }
 

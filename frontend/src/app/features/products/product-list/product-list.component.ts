@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy} from '@angular/core';
 import { FormsModule, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { TitleCasePipe, DecimalPipe } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -67,7 +67,8 @@ export class ProductListComponent implements OnInit {
     public wishlistService: WishlistService,
     public authService: AuthService,
     private snackBar: MatSnackBar,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router
   ) {
     this.filterForm = this.fb.group({
       category: [''],
@@ -147,7 +148,8 @@ export class ProductListComponent implements OnInit {
     event.stopPropagation();
 
     if (!this.authService.isLoggedIn()) {
-      this.snackBar.open('Please log in to save products.', 'Login', { duration: 3000 });
+      const ref = this.snackBar.open('Please log in to save products.', 'Login', { duration: 3000 });
+      ref.onAction().subscribe(() => this.router.navigate(['/auth/login']));
       return;
     }
 
