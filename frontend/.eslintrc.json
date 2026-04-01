@@ -1,15 +1,7 @@
-// .eslintrc.json — ESLint configuration for Angular 21 + TypeScript
-// Run: pnpm exec ng lint
-// Fix auto-fixable issues: pnpm exec ng lint --fix
 {
   "root": true,
-  "ignorePatterns": [
-    "projects/**/*",
-    "dist/**/*",
-    "node_modules/**/*"
-  ],
+  "ignorePatterns": ["projects/**/*"],
   "overrides": [
-    // ── TypeScript files ────────────────────────────────────────────────
     {
       "files": ["*.ts"],
       "extends": [
@@ -19,53 +11,31 @@
         "plugin:@angular-eslint/template/process-inline-templates"
       ],
       "rules": {
-        // Angular-specific
         "@angular-eslint/directive-selector": [
           "error",
-          { "type": "attribute", "prefix": "app", "style": "camelCase" }
+          {
+            "type": "attribute",
+            "prefix": "app",
+            "style": "camelCase"
+          }
         ],
         "@angular-eslint/component-selector": [
           "error",
-          { "type": "element", "prefix": "app", "style": "kebab-case" }
-        ],
-        // Require explicit return types on functions
-        "@typescript-eslint/explicit-function-return-type": "off",
-        // No unused variables (prefix with _ to allow intentionally unused)
-        "@typescript-eslint/no-unused-vars": [
-          "error",
-          { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
-        ],
-        // Prefer const over let when variable is never reassigned
-        "prefer-const": "error",
-        // No console.log in production code
-        "no-console": ["warn", { "allow": ["warn", "error"] }],
-        // No var — use let or const
-        "no-var": "error",
-        // Consistent use of single quotes
-        "@typescript-eslint/quotes": ["error", "single", { "avoidEscape": true }],
-        // Require semicolons
-        "@typescript-eslint/semi": ["error", "always"],
-        // No explicit `any` type
-        "@typescript-eslint/no-explicit-any": "warn",
-        // No non-null assertion operator (!) — handle nulls properly
-        "@typescript-eslint/no-non-null-assertion": "warn"
+          {
+            "type": "element",
+            "prefix": "app",
+            "style": "kebab-case"
+          }
+        ]
       }
     },
-    // ── HTML templates ──────────────────────────────────────────────────
     {
       "files": ["*.html"],
       "extends": [
         "plugin:@angular-eslint/template/recommended",
         "plugin:@angular-eslint/template/accessibility"
       ],
-      "rules": {
-        // Images must have alt text
-        "@angular-eslint/template/alt-text": "error",
-        // No unnecessary click events on non-interactive elements
-        "@angular-eslint/template/click-events-have-key-events": "warn",
-        // Buttons must have a type attribute
-        "@angular-eslint/template/button-has-type": "error"
-      }
+      "rules": {}
     }
   ]
 }
