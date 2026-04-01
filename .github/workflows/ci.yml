@@ -145,7 +145,7 @@ jobs:
       # --max-warnings 0 means any warning is treated as an error.
       - name: Run ESLint
         working-directory: frontend
-        run: pnpm exec ng lint --max-warnings 9
+        run: pnpm exec ng lint --max-warnings 0
 
       # Prettier checks formatting — tabs vs spaces, trailing commas, quote style, etc.
       # Developers should run `pnpm exec prettier --write .` locally before pushing.

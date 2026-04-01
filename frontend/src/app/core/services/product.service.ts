@@ -15,8 +15,7 @@ export class ProductService {
   private apiUrl = `${environment.apiUrl}/products`;
   private aiUrl = `${environment.apiUrl}/ai`;
 
-  /** Inserted by Angular inject() migration for backwards compatibility */
-  constructor(...args: unknown[]);
+
 
   constructor() {}
 

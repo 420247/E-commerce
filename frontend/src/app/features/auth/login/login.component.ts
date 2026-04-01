@@ -47,8 +47,7 @@ export class LoginComponent {
   // Controls password field visibility
   hidePassword = true;
 
-  /** Inserted by Angular inject() migration for backwards compatibility */
-  constructor(...args: unknown[]);
+
 
   constructor() {
     // Validators.required — field must not be empty

@@ -27,8 +27,7 @@ export class AuthService {
 
   private apiUrl = `${environment.apiUrl}/auth`;
 
-  /** Inserted by Angular inject() migration for backwards compatibility */
-  constructor(...args: unknown[]);
+
 
   constructor() {
     this.loadUserFromToken();

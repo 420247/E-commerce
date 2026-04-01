@@ -38,8 +38,7 @@ export class RegisterComponent {
   errorMessage = '';
   hidePassword = true;
 
-  /** Inserted by Angular inject() migration for backwards compatibility */
-  constructor(...args: unknown[]);
+
 
   constructor() {
     this.registerForm = this.fb.group({

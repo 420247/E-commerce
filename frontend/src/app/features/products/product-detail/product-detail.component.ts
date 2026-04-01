@@ -52,8 +52,7 @@ export class ProductDetailComponent implements OnInit {
   product: Product | null = null;
   isLoading = true;
 
-  /** Inserted by Angular inject() migration for backwards compatibility */
-  constructor(...args: unknown[]);
+ 
 
   constructor() {}
 

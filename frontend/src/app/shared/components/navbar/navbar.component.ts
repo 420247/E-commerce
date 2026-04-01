@@ -38,8 +38,6 @@ export class NavbarComponent {
   /** Number of items in the wishlist — updates automatically when wishlist changes. */
   wishlistCount = computed(() => this.wishlistService.wishlistItems().length);
 
-  /** Inserted by Angular inject() migration for backwards compatibility */
-  constructor(...args: unknown[]);
 
   constructor() {}
 

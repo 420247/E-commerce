@@ -74,8 +74,7 @@ export class ProductListComponent implements OnInit {
   /** Available product categories shown in the filter dropdown. */
   categories = ['electronics', 'clothing', 'books', 'sports', 'home'];
 
-  /** Inserted by Angular inject() migration for backwards compatibility */
-  constructor(...args: unknown[]);
+
 
   constructor() {
     this.filterForm = this.fb.group({

@@ -23,8 +23,7 @@ export class WishlistService {
 
   private apiUrl = `${environment.apiUrl}/wishlist`;
 
-  /** Inserted by Angular inject() migration for backwards compatibility */
-  constructor(...args: unknown[]);
+
 
   constructor() {}
 
