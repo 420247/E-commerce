@@ -54,6 +54,32 @@ jobs:
       - name: Run Checkstyle
         working-directory: backend
         run: ./mvnw checkstyle:check -q
+        backend-lint:
+        
+    name: "Backend — Spotless & Checkstyle"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Make mvnw executable
+        run: chmod +x backend/mvnw
+
+      # Spotless checks formatting (Google Java Format)
+      - name: Check formatting (Spotless)
+        working-directory: backend
+        run: ./mvnw spotless:check
+
+      # Checkstyle checks code style rules
+      - name: Check code style (Checkstyle)
+        working-directory: backend
+        run: ./mvnw checkstyle:check -q
 
   # ── Job 2: Backend — Tests ───────────────────────────────────────────────────
   backend-test:
@@ -149,9 +175,9 @@ jobs:
 
       # Prettier checks formatting — tabs vs spaces, trailing commas, quote style, etc.
       # Developers should run `pnpm exec prettier --write .` locally before pushing.
-      # - name: Check Prettier formatting
-      #   working-directory: frontend
-      #   run: pnpm exec prettier --check "src/**/*.{ts,html,scss}"
+      - name: Check Prettier formatting
+        working-directory: frontend
+        run: pnpm exec prettier --check "src/**/*.{ts,html,scss}"
 
   # ── Job 4: Frontend — Production build ──────────────────────────────────────
   frontend-build:
