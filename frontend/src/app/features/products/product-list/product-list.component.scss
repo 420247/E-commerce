@@ -2,15 +2,16 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  animation: fadeUp .4s var(--ease-out) both;
+  animation: fadeUp 0.4s var(--ease-out) both;
 }
 
-.ai-search-card {}
+.ai-search-card {
+}
 
 .ai-label {
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: .07em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--text-3);
   margin-bottom: 10px;
@@ -21,8 +22,14 @@
   gap: 8px;
   align-items: flex-start;
 
-  .ai-input { flex: 1; }
-  button { margin-top: 4px; height: 56px; min-width: 100px; }
+  .ai-input {
+    flex: 1;
+  }
+  button {
+    margin-top: 4px;
+    height: 56px;
+    min-width: 100px;
+  }
 }
 
 .ai-explanation {
@@ -36,8 +43,14 @@
   border-radius: var(--r-sm);
   font-size: 13px;
   color: var(--text-2);
-  animation: fadeIn .25s var(--ease-out);
-  mat-icon { font-size: 14px; width: 14px; height: 14px; margin-top: 1px; color: var(--text-3); }
+  animation: fadeIn 0.25s var(--ease-out);
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    margin-top: 1px;
+    color: var(--text-3);
+  }
 }
 
 .filters-form {
@@ -45,10 +58,16 @@
   flex-wrap: wrap;
   gap: 10px;
   align-items: flex-start;
-  mat-form-field { min-width: 150px; }
+  mat-form-field {
+    min-width: 150px;
+  }
 }
 
-.filter-actions { display: flex; gap: 8px; margin-top: 4px; }
+.filter-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
 
 .products-grid {
   display: grid;
@@ -59,32 +78,41 @@
 .product-card {
   cursor: pointer;
   overflow: hidden;
-  transition: transform var(--duration) var(--ease-out),
-              border-color var(--duration) var(--ease-out),
-              box-shadow var(--duration) var(--ease-out) !important;
+  transition:
+    transform var(--duration) var(--ease-out),
+    border-color var(--duration) var(--ease-out),
+    box-shadow var(--duration) var(--ease-out) !important;
 
   @for $i from 1 through 12 {
-    &:nth-child(#{$i}) { animation: fadeUp .4s var(--ease-out) #{$i * .05}s both; }
+    &:nth-child(#{$i}) {
+      animation: fadeUp 0.4s var(--ease-out) #{$i * 0.05}s both;
+    }
   }
 
-  &:hover { transform: translateY(-3px); }
+  &:hover {
+    transform: translateY(-3px);
+  }
 }
 
 /* Clip image overflow */
-::ng-deep .product-card .mat-mdc-card-media { overflow: hidden; }
+::ng-deep .product-card .mat-mdc-card-media {
+  overflow: hidden;
+}
 
 .product-image {
   height: 180px;
   width: 100%;
   object-fit: cover;
   display: block;
-  transition: transform .35s var(--ease-out);
+  transition: transform 0.35s var(--ease-out);
 
-  .product-card:hover & { transform: scale(1.04); }
+  .product-card:hover & {
+    transform: scale(1.04);
+  }
 }
 
 .product-name {
-  font-size: .9rem;
+  font-size: 0.9rem;
   font-weight: 500;
   color: var(--text-1);
   margin: 10px 0 4px;
@@ -96,7 +124,7 @@
 .product-category {
   font-size: 10px;
   font-weight: 600;
-  letter-spacing: .06em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-3);
   margin: 0 0 8px;
@@ -110,26 +138,42 @@
   color: var(--text-3);
   margin-bottom: 4px;
 
-  .star-icon { color: #d4a017; font-size: 12px; width: 12px; height: 12px; }
+  .star-icon {
+    color: #d4a017;
+    font-size: 12px;
+    width: 12px;
+    height: 12px;
+  }
 }
 
 .product-price {
   font-size: 1rem;
   font-weight: 600;
   color: var(--text-1);
-  letter-spacing: -.02em;
+  letter-spacing: -0.02em;
   margin: 0;
 }
 
 button[mat-icon-button] {
   color: var(--text-3) !important;
-  transition: color var(--duration), transform var(--duration) var(--ease-out) !important;
+  transition:
+    color var(--duration),
+    transform var(--duration) var(--ease-out) !important;
 
-  &:hover { color: #c85250 !important; transform: scale(1.15) !important; }
-  &.mat-warn { color: #c85250 !important; }
+  &:hover {
+    color: #c85250 !important;
+    transform: scale(1.15) !important;
+  }
+  &.mat-warn {
+    color: #c85250 !important;
+  }
 }
 
-.loading-container { display: flex; justify-content: center; padding: 64px; }
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 64px;
+}
 
 .empty-state {
   display: flex;
@@ -138,8 +182,16 @@ button[mat-icon-button] {
   padding: 64px;
   gap: 10px;
   color: var(--text-3);
-  animation: fadeIn .25s var(--ease-out);
+  animation: fadeIn 0.25s var(--ease-out);
 
-  mat-icon { font-size: 40px; width: 40px; height: 40px; opacity: .4; }
-  p { margin: 0; font-size: 13px; }
+  mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    opacity: 0.4;
+  }
+  p {
+    margin: 0;
+    font-size: 13px;
+  }
 }

@@ -16,12 +16,12 @@ import { jwtInterceptor } from './core/interceptors/jwt.interceptor';
  * provideHttpClient  — registers Angular's HTTP client;
  *   withInterceptors attaches the JWT interceptor so every outgoing request
  *   automatically carries the Authorization header
- * 
+ *
  */
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    provideHttpClient(withInterceptors([jwtInterceptor]))
-  ]
+    provideHttpClient(withInterceptors([jwtInterceptor])),
+  ],
 };

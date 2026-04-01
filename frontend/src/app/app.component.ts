@@ -33,8 +33,6 @@ export class AppComponent implements OnInit {
   private authService = inject(AuthService);
   private wishlistService = inject(WishlistService);
 
-
-
   constructor() {}
 
   ngOnInit() {

@@ -52,8 +52,6 @@ export class ProductDetailComponent implements OnInit {
   product: Product | null = null;
   isLoading = true;
 
- 
-
   constructor() {}
 
   ngOnInit() {

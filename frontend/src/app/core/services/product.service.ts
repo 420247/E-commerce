@@ -15,8 +15,6 @@ export class ProductService {
   private apiUrl = `${environment.apiUrl}/products`;
   private aiUrl = `${environment.apiUrl}/ai`;
 
-
-
   constructor() {}
 
   /**

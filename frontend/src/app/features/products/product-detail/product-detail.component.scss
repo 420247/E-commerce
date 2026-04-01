@@ -47,9 +47,16 @@
   align-items: center;
   gap: 4px;
 
-  .star-icon { color: #f59e0b; }
-  .rating-value { font-weight: 600; font-size: 1.1rem; }
-  .rating-label { color: var(--mat-sys-on-surface-variant); }
+  .star-icon {
+    color: #f59e0b;
+  }
+  .rating-value {
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+  .rating-label {
+    color: var(--mat-sys-on-surface-variant);
+  }
 }
 
 .product-price {

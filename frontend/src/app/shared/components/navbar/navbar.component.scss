@@ -12,26 +12,33 @@ mat-toolbar {
 }
 
 .brand {
-  font-size: .95rem;
+  font-size: 0.95rem;
   font-weight: 600;
-  letter-spacing: -.02em;
+  letter-spacing: -0.02em;
   color: var(--text-1);
   text-decoration: none;
   margin-right: auto;
   transition: opacity var(--duration);
-  &:hover { opacity: 0.6; }
+  &:hover {
+    opacity: 0.6;
+  }
 }
 
-.spacer { flex: 1 1 auto; }
+.spacer {
+  flex: 1 1 auto;
+}
 
-a[mat-button], button[mat-button] {
+a[mat-button],
+button[mat-button] {
   font-family: 'Geist', sans-serif !important;
   font-size: 13px !important;
   font-weight: 400 !important;
   color: var(--text-2) !important;
   border-radius: var(--r-sm) !important;
   min-width: unset !important;
-  transition: color var(--duration), background var(--duration) !important;
+  transition:
+    color var(--duration),
+    background var(--duration) !important;
 
   mat-icon {
     font-size: 16px !important;

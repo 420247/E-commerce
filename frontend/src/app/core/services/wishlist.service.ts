@@ -23,8 +23,6 @@ export class WishlistService {
 
   private apiUrl = `${environment.apiUrl}/wishlist`;
 
-
-
   constructor() {}
 
   /**

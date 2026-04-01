@@ -27,8 +27,6 @@ export class AuthService {
 
   private apiUrl = `${environment.apiUrl}/auth`;
 
-
-
   constructor() {
     this.loadUserFromToken();
   }

@@ -11,13 +11,13 @@
   width: 100%;
   max-width: 380px;
   padding: 36px 32px !important;
-  animation: fadeUp .45s var(--ease-out) .05s both;
+  animation: fadeUp 0.45s var(--ease-out) 0.05s both;
 }
 
 mat-card-title {
   font-size: 1.4rem !important;
   font-weight: 600 !important;
-  letter-spacing: -.03em !important;
+  letter-spacing: -0.03em !important;
   color: var(--text-1) !important;
   margin-bottom: 4px !important;
 }
@@ -27,7 +27,9 @@ mat-card-subtitle {
   color: var(--text-3) !important;
 }
 
-.full-width { width: 100%; }
+.full-width {
+  width: 100%;
+}
 
 .submit-btn {
   height: 42px !important;
@@ -43,7 +45,7 @@ mat-card-subtitle {
   border-radius: var(--r-sm);
   color: #b91c1c;
   font-size: 13px;
-  animation: fadeIn .2s var(--ease-out);
+  animation: fadeIn 0.2s var(--ease-out);
 }
 
 .redirect-text {
@@ -58,6 +60,8 @@ mat-card-subtitle {
     border-bottom: 1px solid var(--border-2);
     text-decoration: none;
     transition: border-color var(--duration);
-    &:hover { border-color: var(--text-1); }
+    &:hover {
+      border-color: var(--text-1);
+    }
   }
 }

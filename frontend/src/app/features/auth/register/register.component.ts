@@ -38,8 +38,6 @@ export class RegisterComponent {
   errorMessage = '';
   hidePassword = true;
 
-
-
   constructor() {
     this.registerForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],

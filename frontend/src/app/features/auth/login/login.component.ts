@@ -47,8 +47,6 @@ export class LoginComponent {
   // Controls password field visibility
   hidePassword = true;
 
-
-
   constructor() {
     // Validators.required — field must not be empty
     // Validators.email    — field must match email format
