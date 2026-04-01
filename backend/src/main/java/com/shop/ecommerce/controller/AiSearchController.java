@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/ai")
 @RequiredArgsConstructor
 @CrossOrigin(origins = {
+    "http://localhost",
     "http://localhost:4200",
     "https://e-commerce-dmxk.onrender.com"
 })

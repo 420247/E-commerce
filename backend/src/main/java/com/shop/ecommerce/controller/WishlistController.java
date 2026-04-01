@@ -22,6 +22,7 @@ import java.util.List;
 @RequestMapping("/api/wishlist")
 @RequiredArgsConstructor
 @CrossOrigin(origins = {
+    "http://localhost",
     "http://localhost:4200",
     "https://e-commerce-dmxk.onrender.com"
 })

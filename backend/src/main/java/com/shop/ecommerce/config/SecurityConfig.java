@@ -79,6 +79,7 @@ public class SecurityConfig {
 
         // Only allow requests from the Angular dev server
         config.setAllowedOrigins(List.of(
+            "http://localhost",
             "http://localhost:4200",
             "https://e-commerce-dmxk.onrender.com"
             ));

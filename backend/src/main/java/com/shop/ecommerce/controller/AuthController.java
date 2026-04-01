@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController  // Marks class as REST controller — every method returns JSON automatically
 @RequestMapping("/api/auth") // All endpoints here start with /api/auth
 @CrossOrigin(origins = {
+    "http://localhost",
     "http://localhost:4200",
     "https://e-commerce-dmxk.onrender.com"
 })
