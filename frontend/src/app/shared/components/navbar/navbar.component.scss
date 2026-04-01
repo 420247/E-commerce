@@ -1,19 +1,61 @@
-.brand {
-  font-size: 1.2rem;
-  font-weight: 600;
-  text-decoration: none;
-  color: white;
+:host {
+  display: block;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
-.spacer {
-  flex: 1 1 auto; // pushes navigation links to the right
+mat-toolbar {
+  height: 56px !important;
+  padding: 0 32px !important;
+  gap: 2px;
+}
+
+.brand {
+  font-size: .95rem;
+  font-weight: 600;
+  letter-spacing: -.02em;
+  color: var(--text-1);
+  text-decoration: none;
+  margin-right: auto;
+  transition: opacity var(--duration);
+  &:hover { opacity: 0.6; }
+}
+
+.spacer { flex: 1 1 auto; }
+
+a[mat-button], button[mat-button] {
+  font-family: 'Geist', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  color: var(--text-2) !important;
+  border-radius: var(--r-sm) !important;
+  min-width: unset !important;
+  transition: color var(--duration), background var(--duration) !important;
+
+  mat-icon {
+    font-size: 16px !important;
+    width: 16px !important;
+    height: 16px !important;
+    margin-right: 5px;
+  }
+
+  &:hover {
+    color: var(--text-1) !important;
+    background: var(--surface-2) !important;
+  }
 }
 
 .active-link {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
+  color: var(--text-1) !important;
+  background: var(--surface-2) !important;
 }
 
-mat-icon {
-  margin-right: 4px;
+.mat-badge-content {
+  background: var(--text-1) !important;
+  color: #fff !important;
+  font-size: 9px !important;
+  width: 16px !important;
+  height: 16px !important;
+  line-height: 16px !important;
 }

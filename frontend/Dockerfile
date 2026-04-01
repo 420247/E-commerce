@@ -11,13 +11,13 @@ WORKDIR /app
 # Copy package.json and the lock file BEFORE copying source code.
 # Same layer caching trick as the backend: if dependencies haven't changed,
 # Docker reuses the cached node_modules layer and skips npm install.
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml .npmrc ./
 
 # Install pnpm globally, then install project dependencies.
 # --frozen-lockfile: fail if pnpm-lock.yaml would need to be updated.
 # This prevents silent dependency upgrades in CI — what you test locally
 # is exactly what gets deployed.
-RUN npm install -g pnpm && pnpm install --frozen-lockfile
+RUN npm install -g pnpm && pnpm install --frozen-lockfile --shamefully-hoist --ignore-scripts=false
 
 # Copy all source files and run the production build.
 # Angular CLI compiles TypeScript, bundles assets, and outputs static files
