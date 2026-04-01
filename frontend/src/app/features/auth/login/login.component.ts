@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -24,13 +24,17 @@ import { WishlistService } from '../../../core/services/wishlist.service';
     MatInputModule,
     MatButtonModule,
     MatIconModule,
-    RouterLink
+    RouterLink,
   ],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.scss'
+  styleUrl: './login.component.scss',
 })
 export class LoginComponent {
-  
+  private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
+  private wishlistService = inject(WishlistService);
+  private router = inject(Router);
+
   // FormGroup — a collection of FormControls that represent the whole form
   loginForm: FormGroup;
 
@@ -43,17 +47,15 @@ export class LoginComponent {
   // Controls password field visibility
   hidePassword = true;
 
-  constructor(
-    private fb: FormBuilder, // FormBuilder — shorthand for creating FormGroup/FormControl instances
-    private authService: AuthService,
-    private wishlistService: WishlistService,
-    private router: Router
-  ) {
+  /** Inserted by Angular inject() migration for backwards compatibility */
+  constructor(...args: unknown[]);
+
+  constructor() {
     // Validators.required — field must not be empty
     // Validators.email    — field must match email format
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+      password: ['', [Validators.required, Validators.minLength(6)]],
     });
   }
 
@@ -74,11 +76,12 @@ export class LoginComponent {
         this.router.navigate(['/products']);
       },
       error: (err) => {
-        this.errorMessage = err.status === 401
-          ? 'Invalid email or password.'
-          : 'Something went wrong. Please try again.';
+        this.errorMessage =
+          err.status === 401
+            ? 'Invalid email or password.'
+            : 'Something went wrong. Please try again.';
         this.isLoading = false;
-      }
+      },
     });
   }
 }

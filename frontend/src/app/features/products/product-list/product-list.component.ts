@@ -1,4 +1,10 @@
-import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy} from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ChangeDetectorRef,
+  ChangeDetectionStrategy,
+  inject,
+} from '@angular/core';
 import { FormsModule, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { TitleCasePipe, DecimalPipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
@@ -29,7 +35,7 @@ import { Product, ProductFilter } from '../../../shared/models/product.model';
   selector: 'app-product-list',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-imports: [
+  imports: [
     ReactiveFormsModule,
     FormsModule,
     TitleCasePipe,
@@ -43,12 +49,19 @@ imports: [
     MatSelectModule,
     MatChipsModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule
+    MatSnackBarModule,
   ],
   templateUrl: './product-list.component.html',
-  styleUrl: './product-list.component.scss'
+  styleUrl: './product-list.component.scss',
 })
 export class ProductListComponent implements OnInit {
+  private fb = inject(FormBuilder);
+  private productService = inject(ProductService);
+  wishlistService = inject(WishlistService);
+  authService = inject(AuthService);
+  private snackBar = inject(MatSnackBar);
+  private cdr = inject(ChangeDetectorRef);
+  private router = inject(Router);
 
   products: Product[] = [];
   isLoading = false;
@@ -61,20 +74,15 @@ export class ProductListComponent implements OnInit {
   /** Available product categories shown in the filter dropdown. */
   categories = ['electronics', 'clothing', 'books', 'sports', 'home'];
 
-  constructor(
-    private fb: FormBuilder,
-    private productService: ProductService,
-    public wishlistService: WishlistService,
-    public authService: AuthService,
-    private snackBar: MatSnackBar,
-    private cdr: ChangeDetectorRef,
-    private router: Router
-  ) {
+  /** Inserted by Angular inject() migration for backwards compatibility */
+  constructor(...args: unknown[]);
+
+  constructor() {
     this.filterForm = this.fb.group({
       category: [''],
       minPrice: [''],
       maxPrice: [''],
-      minRating: ['']
+      minRating: [''],
     });
   }
 
@@ -108,7 +116,7 @@ export class ProductListComponent implements OnInit {
         this.isLoading = false;
         this.cdr.markForCheck();
         this.snackBar.open('Failed to load products.', 'Close', { duration: 3000 });
-      }
+      },
     });
   }
 
@@ -135,7 +143,7 @@ export class ProductListComponent implements OnInit {
       error: () => {
         this.isAiLoading = false;
         this.snackBar.open('AI search failed. Please try again.', 'Close', { duration: 3000 });
-      }
+      },
     });
   }
 
@@ -148,18 +156,20 @@ export class ProductListComponent implements OnInit {
     event.stopPropagation();
 
     if (!this.authService.isLoggedIn()) {
-      const ref = this.snackBar.open('Please log in to save products.', 'Login', { duration: 3000 });
+      const ref = this.snackBar.open('Please log in to save products.', 'Login', {
+        duration: 3000,
+      });
       ref.onAction().subscribe(() => this.router.navigate(['/auth/login']));
       return;
     }
 
     if (this.wishlistService.isInWishlist(product.id)) {
       this.wishlistService.removeFromWishlist(product.id).subscribe({
-        next: () => this.snackBar.open('Removed from wishlist.', '', { duration: 2000 })
+        next: () => this.snackBar.open('Removed from wishlist.', '', { duration: 2000 }),
       });
     } else {
       this.wishlistService.addToWishlist(product.id).subscribe({
-        next: () => this.snackBar.open('Added to wishlist!', '', { duration: 2000 })
+        next: () => this.snackBar.open('Added to wishlist!', '', { duration: 2000 }),
       });
     }
   }

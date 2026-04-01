@@ -1,4 +1,10 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  inject,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -18,7 +24,7 @@ import { WishlistItem } from '../../../shared/models/wishlist.model';
 @Component({
   selector: 'app-wishlist-page',
   standalone: true,
-  changeDetection : ChangeDetectionStrategy.OnPush,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     RouterLink,
     DecimalPipe,
@@ -27,19 +33,19 @@ import { WishlistItem } from '../../../shared/models/wishlist.model';
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule
+    MatSnackBarModule,
   ],
   templateUrl: './wishlist-page.component.html',
-  styleUrl: './wishlist-page.component.scss'
+  styleUrl: './wishlist-page.component.scss',
 })
 export class WishlistPageComponent implements OnInit {
+  wishlistService = inject(WishlistService);
+  private snackBar = inject(MatSnackBar);
+  private cdr = inject(ChangeDetectorRef);
+
   isLoading = true;
 
-  constructor(
-    public wishlistService: WishlistService,
-    private snackBar: MatSnackBar,
-    private cdr: ChangeDetectorRef
-  ) {}
+  constructor() {}
 
   ngOnInit() {
     this.wishlistService.loadWishlist().subscribe({
@@ -47,11 +53,11 @@ export class WishlistPageComponent implements OnInit {
         this.isLoading = false;
         this.cdr.markForCheck(); // since we're using OnPush, we need to manually trigger change detection after async data loads
       },
-      error: (err) => {
+      error: () => {
         this.isLoading = false;
         this.cdr.markForCheck();
         this.snackBar.open('Failed to load wishlist', 'Close', { duration: 3000 });
-      }
+      },
     });
   }
   removeItem(item: WishlistItem) {
@@ -59,7 +65,7 @@ export class WishlistPageComponent implements OnInit {
       next: () => {
         this.snackBar.open('Removed from wishlist.', '', { duration: 2000 });
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 }

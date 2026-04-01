@@ -1,4 +1,10 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  inject,
+} from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -29,23 +35,27 @@ import { Product } from '../../../shared/models/product.model';
     MatIconModule,
     MatChipsModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule,],
+    MatSnackBarModule,
+  ],
   templateUrl: './product-detail.component.html',
-  styleUrl: './product-detail.component.scss'
+  styleUrl: './product-detail.component.scss',
 })
 export class ProductDetailComponent implements OnInit {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private productService = inject(ProductService);
+  private snackBar = inject(MatSnackBar);
+  wishlistService = inject(WishlistService);
+  authService = inject(AuthService);
+  private cdr = inject(ChangeDetectorRef);
+
   product: Product | null = null;
   isLoading = true;
 
-  constructor(
-    private route: ActivatedRoute,// provides access to the current route's params
-    private router: Router,
-    private productService: ProductService,
-    private snackBar: MatSnackBar,
-    public wishlistService: WishlistService,
-    public authService: AuthService,
-    private cdr: ChangeDetectorRef
-  ) {}
+  /** Inserted by Angular inject() migration for backwards compatibility */
+  constructor(...args: unknown[]);
+
+  constructor() {}
 
   ngOnInit() {
     // snapshot.paramMap gives the route params at the time of navigation
@@ -70,25 +80,27 @@ export class ProductDetailComponent implements OnInit {
         this.cdr.markForCheck();
         this.snackBar.open('Product not found.', 'Close', { duration: 3000 });
         this.router.navigate(['/products']);
-      }
+      },
     });
   }
   toggleWishlist() {
     if (!this.product) return;
 
     if (!this.authService.isLoggedIn()) {
-      const ref = this.snackBar.open('Please log in to save products.', 'Login', { duration: 3000 });
+      const ref = this.snackBar.open('Please log in to save products.', 'Login', {
+        duration: 3000,
+      });
       ref.onAction().subscribe(() => this.router.navigate(['/auth/login']));
       return;
     }
 
     if (this.wishlistService.isInWishlist(this.product.id)) {
       this.wishlistService.removeFromWishlist(this.product.id).subscribe({
-        next: () => this.snackBar.open('Removed from wishlist.', '', { duration: 2000 })
+        next: () => this.snackBar.open('Removed from wishlist.', '', { duration: 2000 }),
       });
     } else {
       this.wishlistService.addToWishlist(this.product.id).subscribe({
-        next: () => this.snackBar.open('Added to wishlist!', '', { duration: 2000 })
+        next: () => this.snackBar.open('Added to wishlist!', '', { duration: 2000 }),
       });
     }
   }

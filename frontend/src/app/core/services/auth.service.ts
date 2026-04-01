@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
@@ -15,6 +15,8 @@ import { environment } from '../../../environments/environment';
  */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  private http = inject(HttpClient);
+  private router = inject(Router);
 
   /**
    * Reactive signal holding the currently authenticated user.
@@ -25,7 +27,10 @@ export class AuthService {
 
   private apiUrl = `${environment.apiUrl}/auth`;
 
-  constructor(private http: HttpClient, private router: Router) {
+  /** Inserted by Angular inject() migration for backwards compatibility */
+  constructor(...args: unknown[]);
+
+  constructor() {
     this.loadUserFromToken();
   }
 
@@ -34,9 +39,9 @@ export class AuthService {
    * Returns an Observable — must be subscribed to in the component.
    */
   register(request: RegisterRequest) {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, request).pipe(
-      tap(response => this.saveTokens(response))
-    );
+    return this.http
+      .post<AuthResponse>(`${this.apiUrl}/register`, request)
+      .pipe(tap((response) => this.saveTokens(response)));
   }
 
   /**
@@ -44,9 +49,9 @@ export class AuthService {
    * Returns an Observable — must be subscribed to in the component.
    */
   login(request: LoginRequest) {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, request).pipe(
-      tap(response => this.saveTokens(response))
-    );
+    return this.http
+      .post<AuthResponse>(`${this.apiUrl}/login`, request)
+      .pipe(tap((response) => this.saveTokens(response)));
   }
 
   /** Clears tokens from storage, resets user state, and redirects to the login page. */
