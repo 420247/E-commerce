@@ -66,16 +66,24 @@ public class User implements UserDetails {
 
     // Account status checks — all return true for simplicity
     @Override
-    public boolean isAccountNonExpired() { return true; }
+    public boolean isAccountNonExpired() { 
+        return true;
+    }
 
     @Override
-    public boolean isAccountNonLocked() { return true; }
+    public boolean isAccountNonLocked() { 
+        return true; 
+    }
 
     @Override
-    public boolean isCredentialsNonExpired() { return true; }
+    public boolean isCredentialsNonExpired() { 
+        return true; 
+    }
 
     @Override
-    public boolean isEnabled() { return true; }
+    public boolean isEnabled() { 
+        return true; 
+    }
 
     /**
      * Automatically sets createdAt before the entity is first saved to the database.
