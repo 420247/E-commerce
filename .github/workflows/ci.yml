@@ -59,6 +59,10 @@ jobs:
   backend-test:
     name: "Backend — Build & Test"
     runs-on: ubuntu-latest
+    permissions:
+      contents:      read
+      checks:        write   # ← allows creating check run annotations
+      pull-requests: write   # ← allows posting comments on the PR
 
     # Spin up a real PostgreSQL container for integration tests.
     # Spring Boot connects to this database — no H2 in-memory shortcuts.
@@ -141,7 +145,7 @@ jobs:
       # --max-warnings 0 means any warning is treated as an error.
       - name: Run ESLint
         working-directory: frontend
-        run: pnpm exec ng lint --max-warnings 0
+        run: pnpm exec ng lint -- --max-warnings 0
 
       # Prettier checks formatting — tabs vs spaces, trailing commas, quote style, etc.
       # Developers should run `pnpm exec prettier --write .` locally before pushing.
