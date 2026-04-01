@@ -1,39 +1,151 @@
-// Include theming for Angular Material with `mat.theme()`.
-// This Sass mixin will define CSS variables that are used for styling Angular Material
-// components according to the Material 3 design spec.
-// Learn more about theming and how to use it for your application's
-// custom components at https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
+
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap');
+
+/* ── Design tokens ─────────────────────────────────────────── */
+:root {
+  --bg:           #f8f7f5;
+  --surface:      #ffffff;
+  --surface-2:    #f1f0ed;
+  --border:       #e5e3de;
+  --border-2:     #d4d2cc;
+  --text-1:       #1c1b18;
+  --text-2:       #6b6963;
+  --text-3:       #9e9b96;
+  --accent:       #1c1b18;
+  --green:        #2d6a4f;
+  --green-bg:     #f0faf4;
+  --r-sm:         6px;
+  --r-md:         10px;
+  --r-lg:         16px;
+  --shadow:       0 1px 2px rgba(0,0,0,.05), 0 4px 16px rgba(0,0,0,.06);
+  --shadow-lg:    0 2px 4px rgba(0,0,0,.06), 0 12px 32px rgba(0,0,0,.1);
+  --ease-out:     cubic-bezier(0.16, 1, 0.3, 1);
+  --duration:     200ms;
+}
 
 html {
   height: 100%;
-  @include mat.theme(
-    (
-      color: (
-        primary: mat.$rose-palette,
-        tertiary: mat.$red-palette,
-      ),
-      typography: Roboto,
-      density: 0,
-    )
-  );
-}
-
-body {
-  // Default the application to a light color theme. This can be changed to
-  // `dark` to enable the dark color theme, or to `light dark` to defer to the
-  // user's system settings.
   color-scheme: light;
 
-  // Set a default background, font and text colors for the application using
-  // Angular Material's system-level CSS variables. Learn more about these
-  // variables at https://material.angular.dev/guide/system-variables
-  background-color: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
-  font: var(--mat-sys-body-medium);
+  @include mat.theme((
+    color: (
+      primary:   mat.$azure-palette,
+      tertiary:  mat.$violet-palette,
+      theme-type: light,
+    ),
+    typography: 'Geist',
+    density: 0,
+  ));
+}
 
-  // Reset the user agent margin.
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
   margin: 0;
   height: 100%;
+  background: var(--bg);
+  color: var(--text-1);
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
-/* You can add global styles to this file, and also import other style files */
+
+h1, h2, h3, h4 {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* ── Animations ───────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Material overrides ───────────────────────────────────── */
+.mat-mdc-card {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--r-lg) !important;
+  box-shadow: var(--shadow) !important;
+  transition: border-color var(--duration) var(--ease-out),
+              box-shadow var(--duration) var(--ease-out),
+              transform var(--duration) var(--ease-out);
+
+  &:hover {
+    border-color: var(--border-2) !important;
+    box-shadow: var(--shadow-lg) !important;
+  }
+}
+
+.mat-mdc-form-field {
+  --mdc-outlined-text-field-outline-color:       var(--border);
+  --mdc-outlined-text-field-hover-outline-color: var(--border-2);
+  --mdc-outlined-text-field-focus-outline-color: var(--text-1);
+  --mdc-outlined-text-field-label-text-color:    var(--text-3);
+  --mdc-outlined-text-field-input-text-color:    var(--text-1);
+  --mdc-outlined-text-field-container-color:     var(--surface-2);
+}
+
+.mat-mdc-raised-button.mat-primary {
+  --mdc-protected-button-container-color: var(--text-1) !important;
+  --mdc-protected-button-label-text-color: #fff !important;
+  border-radius: var(--r-sm) !important;
+  font-weight: 500 !important;
+  box-shadow: none !important;
+  transition: opacity var(--duration) var(--ease-out),
+              transform var(--duration) var(--ease-out) !important;
+
+  &:hover:not(:disabled) {
+    opacity: 0.85;
+    transform: translateY(-1px);
+    box-shadow: none !important;
+  }
+}
+
+.mat-mdc-stroked-button {
+  border-color: var(--border) !important;
+  color: var(--text-2) !important;
+  border-radius: var(--r-sm) !important;
+
+  &:hover {
+    border-color: var(--border-2) !important;
+    color: var(--text-1) !important;
+    background: var(--surface-2) !important;
+  }
+}
+
+.mat-toolbar {
+  background: rgba(248,247,245,0.85) !important;
+  backdrop-filter: blur(16px) !important;
+  border-bottom: 1px solid var(--border) !important;
+  color: var(--text-1) !important;
+}
+
+.mat-mdc-chip {
+  background: var(--surface-2) !important;
+  color: var(--text-2) !important;
+  border: 1px solid var(--border) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+}
+
+.mat-mdc-select-panel {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-lg) !important;
+  border-radius: var(--r-md) !important;
+}
+
+.mat-mdc-snack-bar-container {
+  --mdc-snackbar-container-color: var(--text-1) !important;
+  --mdc-snackbar-supporting-text-color: #fff !important;
+  border-radius: var(--r-sm) !important;
+}

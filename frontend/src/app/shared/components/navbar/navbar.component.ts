@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
@@ -25,21 +25,21 @@ import { WishlistService } from '../../../core/services/wishlist.service';
     MatIconModule,
     MatBadgeModule,
     RouterLink,
-    RouterLinkActive
+    RouterLinkActive,
   ],
   templateUrl: './navbar.component.html',
-  styleUrl: './navbar.component.scss'
+  styleUrl: './navbar.component.scss',
 })
 export class NavbarComponent {
+  authService = inject(AuthService);
+  private wishlistService = inject(WishlistService);
+  private router = inject(Router);
 
   /** Number of items in the wishlist — updates automatically when wishlist changes. */
   wishlistCount = computed(() => this.wishlistService.wishlistItems().length);
 
-  constructor(
-    public authService: AuthService,
-    private wishlistService: WishlistService,
-    private router: Router
-  ) {}
+
+  constructor() {}
 
   logout() {
     this.authService.logout();

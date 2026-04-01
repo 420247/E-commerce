@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './shared/components/navbar/navbar.component';
 import { AuthService } from './core/services/auth.service';
@@ -19,20 +19,23 @@ import { WishlistService } from './core/services/wishlist.service';
       <router-outlet />
     </main>
   `,
-  styles: [`
-    .main-content {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 24px 16px;
-    }
-  `]
+  styles: [
+    `
+      .main-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px 16px;
+      }
+    `,
+  ],
 })
 export class AppComponent implements OnInit {
+  private authService = inject(AuthService);
+  private wishlistService = inject(WishlistService);
 
-  constructor(
-    private authService: AuthService,
-    private wishlistService: WishlistService
-  ) {}
+
+
+  constructor() {}
 
   ngOnInit() {
     // If user has a valid token from a previous session, load their wishlist immediately

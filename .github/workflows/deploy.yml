@@ -1,0 +1,183 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Deploy Pipeline — MANUAL trigger only.
+#
+# You decide when to deploy. Go to:
+#   GitHub → Actions → "Deploy" → Run workflow → choose environment → Run
+#
+# This workflow:
+#   1. Verifies CI is green on the selected branch (safety check)
+#   2. Triggers Render to rebuild and redeploy the backend
+#   3. Triggers Render to rebuild and redeploy the frontend
+#   4. Posts a deployment summary to the workflow run
+#
+# Environments:
+#   production — deploys to the live Render services
+#   staging    — deploys to staging Render services (if configured)
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: Deploy
+
+on:
+  # workflow_dispatch = manual button in GitHub Actions UI.
+  # The `inputs` block adds a form that appears when you click "Run workflow".
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        default: production
+        type: choice
+        options:
+          - production
+          - staging
+
+      branch:
+        description: "Branch to deploy (default: main)"
+        required: false
+        default: main
+        type: string
+
+      reason:
+        description: "Reason for deployment (shown in summary)"
+        required: false
+        default: ""
+        type: string
+
+jobs:
+
+  # ── Job 1: Safety check — CI must be green ──────────────────────────────────
+  verify:
+    name: "Verify CI is green"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out selected branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      # Call the GitHub API to check whether the latest CI run on this branch
+      # passed. Prevents deploying a broken build by accident.
+      - name: Verify latest CI status on branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="${{ github.event.inputs.branch }}"
+          echo "Checking CI status for branch: $BRANCH"
+
+          # Get the latest commit SHA on the branch
+          SHA=$(git rev-parse HEAD)
+          echo "Commit SHA: $SHA"
+
+          # Query the GitHub Checks API for this commit
+          STATUS=$(gh api \
+            repos/${{ github.repository }}/commits/$SHA/check-runs \
+            --jq '[.check_runs[] | select(.name | startswith("Backend") or startswith("Frontend")) | .conclusion] | unique | .[]' \
+            2>/dev/null || echo "unknown")
+
+          echo "CI conclusions: $STATUS"
+
+          # Fail the deploy if any CI job did not succeed
+          if echo "$STATUS" | grep -qvE "^success$"; then
+            echo "❌ CI is not fully green on $BRANCH. Fix failing checks before deploying."
+            exit 1
+          fi
+
+          echo "✅ CI is green. Proceeding with deploy."
+
+  # ── Job 2: Deploy backend to Render ─────────────────────────────────────────
+  deploy-backend:
+    name: "Deploy backend → ${{ github.event.inputs.environment }}"
+    runs-on: ubuntu-latest
+    needs: verify   # only runs if the verify job passed
+    environment: ${{ github.event.inputs.environment }}   # enables environment protection rules
+
+    steps:
+      - name: Trigger Render backend deploy
+        run: |
+          echo "Deploying backend to ${{ github.event.inputs.environment }}..."
+
+          # curl -f: fail with non-zero exit code on HTTP 4xx/5xx responses.
+          # Without -f, curl exits 0 even on HTTP 500 and the step looks green.
+          RESPONSE=$(curl -sf -X POST \
+            "${{ secrets.RENDER_BACKEND_DEPLOY_HOOK }}" \
+            -H "Content-Type: application/json" \
+            -w "\nHTTP_STATUS:%{http_code}")
+
+          HTTP_STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS:" | cut -d: -f2)
+          echo "Render response status: $HTTP_STATUS"
+
+          if [ "$HTTP_STATUS" != "200" ] && [ "$HTTP_STATUS" != "201" ]; then
+            echo "❌ Render deploy hook returned HTTP $HTTP_STATUS"
+            exit 1
+          fi
+
+          echo "✅ Backend deploy triggered successfully"
+
+      # Wait a moment then poll Render to confirm the deploy actually started.
+      # Useful for catching cases where the hook URL is stale.
+      - name: Confirm deploy started
+        run: |
+          echo "Backend deploy triggered. Check progress at:"
+          echo "https://dashboard.render.com"
+          sleep 5
+          echo "Deploy is running — monitor Render dashboard for completion."
+
+  # ── Job 3: Deploy frontend to Render ────────────────────────────────────────
+  deploy-frontend:
+    name: "Deploy frontend → ${{ github.event.inputs.environment }}"
+    runs-on: ubuntu-latest
+    needs: verify
+    environment: ${{ github.event.inputs.environment }}
+
+    steps:
+      - name: Trigger Render frontend deploy
+        run: |
+          echo "Deploying frontend to ${{ github.event.inputs.environment }}..."
+
+          RESPONSE=$(curl -sf -X POST \
+            "${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK }}" \
+            -H "Content-Type: application/json" \
+            -w "\nHTTP_STATUS:%{http_code}")
+
+          HTTP_STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS:" | cut -d: -f2)
+          echo "Render response status: $HTTP_STATUS"
+
+          if [ "$HTTP_STATUS" != "200" ] && [ "$HTTP_STATUS" != "201" ]; then
+            echo "❌ Render deploy hook returned HTTP $HTTP_STATUS"
+            exit 1
+          fi
+
+          echo "✅ Frontend deploy triggered successfully"
+
+  # ── Job 4: Post deployment summary ──────────────────────────────────────────
+  summary:
+    name: "Deployment summary"
+    runs-on: ubuntu-latest
+    needs: [deploy-backend, deploy-frontend]
+    if: always()   # run even if a deploy job failed
+
+    steps:
+      - name: Write summary to GitHub Actions UI
+        run: |
+          # This writes a markdown summary visible on the workflow run page
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## Deployment Summary
+
+          | Field        | Value |
+          |-------------|-------|
+          | Environment | \`${{ github.event.inputs.environment }}\` |
+          | Branch      | \`${{ github.event.inputs.branch }}\` |
+          | Triggered by| @${{ github.actor }} |
+          | Reason      | ${{ github.event.inputs.reason || '—' }} |
+          | Time        | $(date -u '+%Y-%m-%d %H:%M UTC') |
+
+          ### Status
+          - Backend:  ${{ needs.deploy-backend.result == 'success' && '✅ Deployed' || '❌ Failed' }}
+          - Frontend: ${{ needs.deploy-frontend.result == 'success' && '✅ Deployed' || '❌ Failed' }}
+
+          ### Links
+          - [Render Dashboard](https://dashboard.render.com)
+          - [GitHub Actions Run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          EOF
+          

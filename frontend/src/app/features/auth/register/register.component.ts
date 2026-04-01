@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -16,34 +16,35 @@ import { AuthService } from '../../../core/services/auth.service';
 @Component({
   selector: 'app-register',
   standalone: true,
-imports: [
+  imports: [
     ReactiveFormsModule,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
     MatIconModule,
-    RouterLink
+    RouterLink,
   ],
   templateUrl: './register.component.html',
-  styleUrl: './register.component.scss'
+  styleUrl: './register.component.scss',
 })
 export class RegisterComponent {
+  private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
   registerForm: FormGroup;
   isLoading = false;
   errorMessage = '';
   hidePassword = true;
 
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router
-  ) {
+
+
+  constructor() {
     this.registerForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+      password: ['', [Validators.required, Validators.minLength(6)]],
     });
   }
 
@@ -59,11 +60,12 @@ export class RegisterComponent {
     this.authService.register(this.registerForm.value).subscribe({
       next: () => this.router.navigate(['/products']),
       error: (err) => {
-        this.errorMessage = err.status === 400
-          ? 'Email is already in use.'
-          : 'Something went wrong. Please try again.';
+        this.errorMessage =
+          err.status === 400
+            ? 'Email is already in use.'
+            : 'Something went wrong. Please try again.';
         this.isLoading = false;
-      }
+      },
     });
   }
 }

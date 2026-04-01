@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Product, ProductFilter, AiSearchResponse } from '../../shared/models/product.model';
@@ -10,11 +10,14 @@ import { environment } from '../../../environments/environment';
  */
 @Injectable({ providedIn: 'root' })
 export class ProductService {
+  private http = inject(HttpClient);
 
   private apiUrl = `${environment.apiUrl}/products`;
   private aiUrl = `${environment.apiUrl}/ai`;
 
-  constructor(private http: HttpClient) {}
+
+
+  constructor() {}
 
   /**
    * Fetches products from GET /api/products with optional filters.

@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
 import { WishlistItem } from '../../shared/models/wishlist.model';
@@ -13,6 +13,7 @@ import { environment } from '../../../environments/environment';
  */
 @Injectable({ providedIn: 'root' })
 export class WishlistService {
+  private http = inject(HttpClient);
 
   /**
    * Reactive signal holding the current user's wishlist items.
@@ -22,16 +23,18 @@ export class WishlistService {
 
   private apiUrl = `${environment.apiUrl}/wishlist`;
 
-  constructor(private http: HttpClient) {}
+
+
+  constructor() {}
 
   /**
    * Loads the user's wishlist from GET /api/wishlist and stores it in the signal.
    * Should be called once after the user logs in.
    */
   loadWishlist() {
-    return this.http.get<WishlistItem[]>(this.apiUrl).pipe(
-      tap(items => this.wishlistItems.set(items))
-    );
+    return this.http
+      .get<WishlistItem[]>(this.apiUrl)
+      .pipe(tap((items) => this.wishlistItems.set(items)));
   }
 
   /**
@@ -39,9 +42,9 @@ export class WishlistService {
    * Appends the new item to the signal immediately on success.
    */
   addToWishlist(productId: number) {
-    return this.http.post<WishlistItem>(`${this.apiUrl}/${productId}`, {}).pipe(
-      tap(item => this.wishlistItems.update(items => [...items, item]))
-    );
+    return this.http
+      .post<WishlistItem>(`${this.apiUrl}/${productId}`, {})
+      .pipe(tap((item) => this.wishlistItems.update((items) => [...items, item])));
   }
 
   /**
@@ -49,15 +52,17 @@ export class WishlistService {
    * Filters the item out of the signal immediately on success.
    */
   removeFromWishlist(productId: number) {
-    return this.http.delete(`${this.apiUrl}/${productId}`).pipe(
-      tap(() => this.wishlistItems.update(items =>
-        items.filter(i => i.product.id !== productId)
-      ))
-    );
+    return this.http
+      .delete(`${this.apiUrl}/${productId}`)
+      .pipe(
+        tap(() =>
+          this.wishlistItems.update((items) => items.filter((i) => i.product.id !== productId)),
+        ),
+      );
   }
 
   /** Returns true if the given product is already in the wishlist. */
   isInWishlist(productId: number): boolean {
-    return this.wishlistItems().some(i => i.product.id === productId);
+    return this.wishlistItems().some((i) => i.product.id === productId);
   }
 }
