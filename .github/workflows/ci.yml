@@ -1,0 +1,187 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# CI Pipeline — runs on every pull request and every push to main.
+#
+# Stages:
+#   1. backend-lint    — Checkstyle code style check
+#   2. backend-test    — compile + unit/integration tests against real PostgreSQL
+#   3. frontend-lint   — ESLint + Prettier format check
+#   4. frontend-build  — TypeScript compile + Angular production build
+#
+# All four jobs run in parallel. The PR is blocked until all pass.
+# Deploy is a SEPARATE workflow (deploy.yml) triggered manually.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: CI
+
+on:
+  # Run on every pull request — blocks merge if any job fails
+  pull_request:
+    branches: [main, develop]
+
+  # Also run on direct pushes to main (after merge) to keep main green
+  push:
+    branches: [main]
+
+# Cancel any in-progress run for the same PR/branch when a new commit is pushed.
+# Prevents stale runs from wasting CI minutes.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  # ── Job 1: Backend — Checkstyle lint ────────────────────────────────────────
+  backend-lint:
+    name: "Backend — Checkstyle"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Make mvnw executable
+        run: chmod +x backend/mvnw
+
+      # Checkstyle enforces consistent code style (indentation, naming, etc.)
+      # Configuration lives in backend/checkstyle.xml (Google Java Style by default).
+      # If this step fails, fix the style issues before the PR can be merged.
+      - name: Run Checkstyle
+        working-directory: backend
+        run: ./mvnw checkstyle:check -q
+
+  # ── Job 2: Backend — Tests ───────────────────────────────────────────────────
+  backend-test:
+    name: "Backend — Build & Test"
+    runs-on: ubuntu-latest
+
+    # Spin up a real PostgreSQL container for integration tests.
+    # Spring Boot connects to this database — no H2 in-memory shortcuts.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB:       ecommerce_test
+          POSTGRES_USER:     test
+          POSTGRES_PASSWORD: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          # Cache ~/.m2 between runs — saves ~2 min on dependency downloads
+          cache: maven
+
+      - name: Make mvnw executable
+        run: chmod +x backend/mvnw
+
+      - name: Run tests
+        working-directory: backend
+        env:
+          SPRING_DATASOURCE_URL:               jdbc:postgresql://localhost:5432/ecommerce_test
+          SPRING_DATASOURCE_USERNAME:          test
+          SPRING_DATASOURCE_PASSWORD:          test
+          APPLICATION_SECURITY_JWT_SECRET_KEY: ${{ secrets.JWT_SECRET }}
+          # Tests don't call Claude — dummy value prevents bean initialisation errors
+          APPLICATION_ANTHROPIC_API_KEY:       dummy
+          APPLICATION_ANTHROPIC_MODEL:         claude-sonnet-4-20250514
+        # verify = compile + test + package + verify (full lifecycle)
+        run: ./mvnw verify -q
+
+      # Publish JUnit test results as a PR check annotation.
+      # Shows individual test failures directly in the PR interface.
+      - name: Publish test results
+        uses: dorny/test-reporter@v1
+        if: always()   # run even if tests failed so we always see the report
+        with:
+          name:              Backend Test Results
+          path:              backend/target/surefire-reports/*.xml
+          reporter:          java-junit
+          fail-on-error:     true
+
+  # ── Job 3: Frontend — ESLint + Prettier ─────────────────────────────────────
+  frontend-lint:
+    name: "Frontend — Lint & Format"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        working-directory: frontend
+        # --frozen-lockfile: abort if lock file is out of sync (reproducible builds)
+        run: pnpm install --frozen-lockfile
+
+      # ESLint catches TypeScript errors, unused imports, and Angular-specific issues.
+      # --max-warnings 0 means any warning is treated as an error.
+      - name: Run ESLint
+        working-directory: frontend
+        run: pnpm exec ng lint --max-warnings 0
+
+      # Prettier checks formatting — tabs vs spaces, trailing commas, quote style, etc.
+      # Developers should run `pnpm exec prettier --write .` locally before pushing.
+      - name: Check Prettier formatting
+        working-directory: frontend
+        run: pnpm exec prettier --check "src/**/*.{ts,html,scss}"
+
+  # ── Job 4: Frontend — Production build ──────────────────────────────────────
+  frontend-build:
+    name: "Frontend — Build"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+
+      # ng build compiles TypeScript, checks template types, and bundles assets.
+      # If TypeScript has errors or the budget limit is exceeded, this fails.
+      - name: Build production bundle
+        working-directory: frontend
+        run: pnpm build
+
+      # Cache the dist/ folder so the deploy workflow can reuse it
+      # without rebuilding — saves ~3 min on the deploy side.
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name:              frontend-dist
+          path:              frontend/dist/
+          retention-days:    3   # keep for 3 days — enough to cover the deploy window
+          
