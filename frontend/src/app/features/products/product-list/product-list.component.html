@@ -18,8 +18,8 @@
             [ngModelOptions]="{ standalone: true }"
           />
         </mat-form-field>
-        <button mat-raised-button color="accent" (click)="aiSearch()" [disabled]="isAiLoading">
-          @if (isAiLoading) {
+        <button mat-raised-button color="accent" (click)="aiSearch()" [disabled]="isAiLoading()">
+          @if (isAiLoading()) {
             <mat-spinner diameter="20" />
           } @else {
             <mat-icon>search</mat-icon>
@@ -28,10 +28,10 @@
         </button>
       </div>
 
-      @if (aiExplanation) {
+      @if (aiExplanation()) {
         <p class="ai-explanation">
           <mat-icon>info</mat-icon>
-          {{ aiExplanation }}
+          {{ aiExplanation() }}
         </p>
       }
     </mat-card-content>
@@ -84,18 +84,18 @@
   </mat-card>
 
   <!-- Product Grid -->
-  @if (isLoading) {
+  @if (isLoading()) {
     <div class="loading-container">
       <mat-spinner />
     </div>
-  } @else if (products.length === 0) {
+  } @else if (products().length === 0) {
     <div class="empty-state">
       <mat-icon>search_off</mat-icon>
       <p>No products found. Try adjusting your filters.</p>
     </div>
   } @else {
     <div class="products-grid">
-      @for (product of products; track product.id) {
+      @for (product of products(); track product.id) {
         <mat-card class="product-card" [routerLink]="['/products', product.id]">
           <img
             mat-card-image

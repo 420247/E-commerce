@@ -1,10 +1,12 @@
 import {
-  Component,
-  OnInit,
-  ChangeDetectorRef,
   ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  OnInit,
   inject,
+  signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { TitleCasePipe, DecimalPipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
@@ -22,15 +24,7 @@ import { WishlistService } from '../../../core/services/wishlist.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Product, ProductFilter } from '../../../shared/models/product.model';
 
-/**
- * Product listing page with filtering and AI search.
- *
- * OnInit — lifecycle hook called once after Angular initialises the component.
- * Used here to load the initial product list from the backend.
- *
- * MatSnackBar — Angular Material service for brief notification messages
- * shown at the bottom of the screen (e.g. "Added to wishlist").
- */
+/** Product listing page with filter form and AI search. */
 @Component({
   selector: 'app-product-list',
   standalone: true,
@@ -60,18 +54,17 @@ export class ProductListComponent implements OnInit {
   wishlistService = inject(WishlistService);
   authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
-  private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
+  private destroyRef = inject(DestroyRef);
 
-  products: Product[] = [];
-  isLoading = false;
-  isAiLoading = false;
-  aiExplanation = '';
+  products = signal<Product[]>([]);
+  isLoading = signal(false);
+  isAiLoading = signal(false);
+  aiExplanation = signal('');
 
   filterForm: FormGroup;
   aiSearchQuery = '';
 
-  /** Available product categories shown in the filter dropdown. */
   categories = ['electronics', 'clothing', 'books', 'sports', 'home'];
 
   constructor() {
@@ -87,87 +80,90 @@ export class ProductListComponent implements OnInit {
     this.loadProducts();
   }
 
-  /**
-   * Loads products from the backend, applying only the filters that have values.
-   * Empty strings are treated as "no filter" — not sent to the backend.
-   */
+  /** Loads products, passing only the filter fields the user actually filled in. */
   loadProducts() {
-    this.isLoading = true;
-    this.aiExplanation = '';
+    this.isLoading.set(true);
+    this.aiExplanation.set('');
 
     const formValue = this.filterForm.value;
     const filter: ProductFilter = {};
 
     if (formValue.category) filter.category = formValue.category;
-    if (formValue.minPrice) filter.minPrice = +formValue.minPrice; // + converts string to number
+    if (formValue.minPrice) filter.minPrice = +formValue.minPrice;
     if (formValue.maxPrice) filter.maxPrice = +formValue.maxPrice;
     if (formValue.minRating) filter.minRating = +formValue.minRating;
 
-    this.productService.getProducts(filter).subscribe({
-      next: (products) => {
-        this.products = products;
-        this.isLoading = false;
-        this.cdr.markForCheck(); // since we're using OnPush, we need to manually trigger change detection after async data loads
-      },
-      error: () => {
-        this.isLoading = false;
-        this.cdr.markForCheck();
-        this.snackBar.open('Failed to load products.', 'Close', { duration: 3000 });
-      },
-    });
+    this.productService
+      .getProducts(filter)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (products) => {
+          this.products.set(products);
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.isLoading.set(false);
+          this.snackBar.open('Failed to load products.', 'Close', { duration: 3000 });
+        },
+      });
   }
 
-  /** Resets all filters and reloads the full product list. */
   clearFilters() {
     this.filterForm.reset();
     this.loadProducts();
   }
 
-  /**
-   * Sends the natural language query to the AI search endpoint.
-   * Replaces the product list with AI-matched results and shows Claude's explanation.
-   */
+  /** Sends a natural-language query to the AI search endpoint. */
   aiSearch() {
     if (!this.aiSearchQuery.trim()) return;
 
-    this.isAiLoading = true;
-    this.productService.aiSearch(this.aiSearchQuery).subscribe({
-      next: (response) => {
-        this.products = response.products;
-        this.aiExplanation = response.explanation;
-        this.isAiLoading = false;
-      },
-      error: () => {
-        this.isAiLoading = false;
-        this.snackBar.open('AI search failed. Please try again.', 'Close', { duration: 3000 });
-      },
-    });
+    this.isAiLoading.set(true);
+    this.productService
+      .aiSearch(this.aiSearchQuery)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          this.products.set(response.products);
+          this.aiExplanation.set(response.explanation);
+          this.isAiLoading.set(false);
+        },
+        error: () => {
+          this.isAiLoading.set(false);
+          this.snackBar.open('AI search failed. Please try again.', 'Close', { duration: 3000 });
+        },
+      });
   }
 
-  /**
-   * Adds or removes a product from the wishlist depending on its current state.
-   * Requires the user to be logged in — shows a message otherwise.
-   */
   toggleWishlist(product: Product, event: Event) {
-    event.preventDefault(); // prevent navigation to product detail
+    // Card is wrapped in routerLink — stop the click from navigating
+    event.preventDefault();
     event.stopPropagation();
 
     if (!this.authService.isLoggedIn()) {
       const ref = this.snackBar.open('Please log in to save products.', 'Login', {
         duration: 3000,
       });
-      ref.onAction().subscribe(() => this.router.navigate(['/auth/login']));
+      ref
+        .onAction()
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(() => this.router.navigate(['/auth/login']));
       return;
     }
 
     if (this.wishlistService.isInWishlist(product.id)) {
-      this.wishlistService.removeFromWishlist(product.id).subscribe({
-        next: () => this.snackBar.open('Removed from wishlist.', '', { duration: 2000 }),
-      });
+      this.wishlistService
+        .removeFromWishlist(product.id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => this.snackBar.open('Removed from wishlist.', '', { duration: 2000 }),
+        });
     } else {
-      this.wishlistService.addToWishlist(product.id).subscribe({
-        next: () => this.snackBar.open('Added to wishlist!', '', { duration: 2000 }),
-      });
+      this.wishlistService
+        .addToWishlist(product.id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => this.snackBar.open('Added to wishlist!', '', { duration: 2000 }),
+        });
     }
   }
 }

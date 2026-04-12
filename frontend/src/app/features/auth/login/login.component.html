@@ -22,10 +22,13 @@
 
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Password</mat-label>
-          <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" />
-          <!-- Toggle password visibility -->
-          <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
-            <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          <input
+            matInput
+            [type]="hidePassword() ? 'password' : 'text'"
+            formControlName="password"
+          />
+          <button mat-icon-button matSuffix type="button" (click)="toggleHidePassword()">
+            <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
           </button>
           @if (
             loginForm.get('password')?.touched && loginForm.get('password')?.hasError('required')
@@ -35,8 +38,8 @@
         </mat-form-field>
 
         <!-- Backend error message -->
-        @if (errorMessage) {
-          <p class="error-message">{{ errorMessage }}</p>
+        @if (errorMessage()) {
+          <p class="error-message">{{ errorMessage() }}</p>
         }
 
         <button
@@ -44,9 +47,9 @@
           color="primary"
           type="submit"
           class="full-width submit-btn"
-          [disabled]="isLoading"
+          [disabled]="isLoading()"
         >
-          {{ isLoading ? 'Signing in...' : 'Sign in' }}
+          {{ isLoading() ? 'Signing in...' : 'Sign in' }}
         </button>
       </form>
     </mat-card-content>

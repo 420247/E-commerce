@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
 import { AuthResponse, LoginRequest, RegisterRequest, User } from '../../shared/models/user.model';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../environments/environment.prod';
 
 /**
  * Handles all authentication logic: registration, login, logout, and session restoration.

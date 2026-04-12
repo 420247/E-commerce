@@ -1,8 +1,8 @@
-@if (isLoading) {
+@if (isLoading()) {
   <div class="loading-container">
     <mat-spinner />
   </div>
-} @else if (product) {
+} @else if (product(); as product) {
   <div class="detail-container">
     <a mat-button routerLink="/products" class="back-btn">
       <mat-icon>arrow_back</mat-icon> Back to products
