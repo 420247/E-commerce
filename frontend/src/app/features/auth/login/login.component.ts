@@ -1,4 +1,5 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -9,14 +10,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../../core/services/auth.service';
 import { WishlistService } from '../../../core/services/wishlist.service';
 
-/**
- * Login page component.
- * Uses Angular Reactive Forms for validation — FormGroup holds the form state,
- * FormControl tracks individual field values and validation errors.
- */
+/** Login page. Reactive form + signal state for OnPush. */
 @Component({
   selector: 'app-login',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ReactiveFormsModule,
     MatCardModule,
@@ -34,53 +32,52 @@ export class LoginComponent {
   private authService = inject(AuthService);
   private wishlistService = inject(WishlistService);
   private router = inject(Router);
+  private destroyRef = inject(DestroyRef);
 
-  // FormGroup — a collection of FormControls that represent the whole form
   loginForm: FormGroup;
-
-  // Tracks loading state to disable the button during the HTTP request
-  isLoading = false;
-
-  // Stores the error message returned by the backend e.g. "Bad credentials"
-  errorMessage = '';
-
-  // Controls password field visibility
-  hidePassword = true;
-
-
+  isLoading = signal(false);
+  errorMessage = signal('');
+  hidePassword = signal(true);
 
   constructor() {
-    // Validators.required — field must not be empty
-    // Validators.email    — field must match email format
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
     });
   }
 
+  toggleHidePassword() {
+    this.hidePassword.update((v) => !v);
+  }
+
   onSubmit() {
-    // Mark all fields as touched to trigger validation messages on submit
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
       return;
     }
 
-    this.isLoading = true;
-    this.errorMessage = '';
+    this.isLoading.set(true);
+    this.errorMessage.set('');
 
-    this.authService.login(this.loginForm.value).subscribe({
-      next: () => {
-        // After login, load the wishlist and redirect to products
-        this.wishlistService.loadWishlist().subscribe();
-        this.router.navigate(['/products']);
-      },
-      error: (err) => {
-        this.errorMessage =
-          err.status === 401
-            ? 'Invalid email or password.'
-            : 'Something went wrong. Please try again.';
-        this.isLoading = false;
-      },
-    });
+    this.authService
+      .login(this.loginForm.value)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          // loadWishlist is intentionally not scoped to destroyRef —
+          // router.navigate destroys this component and would cancel the request.
+          // HttpClient observables complete on their own so there is no leak.
+          this.wishlistService.loadWishlist().subscribe();
+          this.router.navigate(['/products']);
+        },
+        error: (err) => {
+          this.errorMessage.set(
+            err.status === 401
+              ? 'Invalid email or password.'
+              : 'Something went wrong. Please try again.',
+          );
+          this.isLoading.set(false);
+        },
+      });
   }
 }

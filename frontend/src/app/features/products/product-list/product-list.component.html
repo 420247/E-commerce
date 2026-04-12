@@ -1,5 +1,4 @@
 <div class="page-container">
-
   <!-- AI Search -->
   <mat-card class="ai-search-card">
     <mat-card-content>
@@ -12,11 +11,15 @@
       <div class="ai-search-row">
         <mat-form-field appearance="outline" class="ai-input">
           <mat-label>e.g. "cheap phone with good camera under 500 euros"</mat-label>
-          <input matInput [(ngModel)]="aiSearchQuery" (keyup.enter)="aiSearch()"
-                 [ngModelOptions]="{standalone: true}">
+          <input
+            matInput
+            [(ngModel)]="aiSearchQuery"
+            (keyup.enter)="aiSearch()"
+            [ngModelOptions]="{ standalone: true }"
+          />
         </mat-form-field>
-        <button mat-raised-button color="accent" (click)="aiSearch()" [disabled]="isAiLoading">
-          @if (isAiLoading) {
+        <button mat-raised-button color="accent" (click)="aiSearch()" [disabled]="isAiLoading()">
+          @if (isAiLoading()) {
             <mat-spinner diameter="20" />
           } @else {
             <mat-icon>search</mat-icon>
@@ -25,10 +28,10 @@
         </button>
       </div>
 
-      @if (aiExplanation) {
+      @if (aiExplanation()) {
         <p class="ai-explanation">
           <mat-icon>info</mat-icon>
-          {{ aiExplanation }}
+          {{ aiExplanation() }}
         </p>
       }
     </mat-card-content>
@@ -38,7 +41,6 @@
   <mat-card class="filters-card">
     <mat-card-content>
       <form [formGroup]="filterForm" class="filters-form">
-
         <mat-form-field appearance="outline">
           <mat-label>Category</mat-label>
           <mat-select formControlName="category">
@@ -51,12 +53,12 @@
 
         <mat-form-field appearance="outline">
           <mat-label>Min price (€)</mat-label>
-          <input matInput type="number" formControlName="minPrice" min="0">
+          <input matInput type="number" formControlName="minPrice" min="0" />
         </mat-form-field>
 
         <mat-form-field appearance="outline">
           <mat-label>Max price (€)</mat-label>
-          <input matInput type="number" formControlName="maxPrice" min="0">
+          <input matInput type="number" formControlName="maxPrice" min="0" />
         </mat-form-field>
 
         <mat-form-field appearance="outline">
@@ -77,27 +79,31 @@
             <mat-icon>clear</mat-icon> Clear
           </button>
         </div>
-
       </form>
     </mat-card-content>
   </mat-card>
 
   <!-- Product Grid -->
-  @if (isLoading) {
+  @if (isLoading()) {
     <div class="loading-container">
       <mat-spinner />
     </div>
-  } @else if (products.length === 0) {
+  } @else if (products().length === 0) {
     <div class="empty-state">
       <mat-icon>search_off</mat-icon>
       <p>No products found. Try adjusting your filters.</p>
     </div>
   } @else {
     <div class="products-grid">
-      @for (product of products; track product.id) {
+      @for (product of products(); track product.id) {
         <mat-card class="product-card" [routerLink]="['/products', product.id]">
-          <img mat-card-image [src]="product.imageUrl" [alt]="product.name"
-               class="product-image" onerror="this.src='https://placehold.co/400x300'">
+          <img
+            mat-card-image
+            [src]="product.imageUrl"
+            [alt]="product.name"
+            class="product-image"
+            onerror="this.src = 'https://placehold.co/400x300'"
+          />
 
           <mat-card-content>
             <h3 class="product-name">{{ product.name }}</h3>
@@ -108,16 +114,18 @@
               <span>{{ product.rating }}</span>
             </div>
 
-            <p class="product-price">€{{ product.price | number:'1.2-2' }}</p>
+            <p class="product-price">€{{ product.price | number: '1.2-2' }}</p>
           </mat-card-content>
 
           <mat-card-actions>
             <button mat-stroked-button [routerLink]="['/products', product.id]">
               View details
             </button>
-            <button mat-icon-button
-                    [color]="wishlistService.isInWishlist(product.id) ? 'warn' : ''"
-                    (click)="toggleWishlist(product, $event)">
+            <button
+              mat-icon-button
+              [color]="wishlistService.isInWishlist(product.id) ? 'warn' : ''"
+              (click)="toggleWishlist(product, $event)"
+            >
               <mat-icon>
                 {{ wishlistService.isInWishlist(product.id) ? 'favorite' : 'favorite_border' }}
               </mat-icon>
@@ -127,5 +135,4 @@
       }
     </div>
   }
-
 </div>

@@ -13,7 +13,11 @@
   <!-- Wishlist — only visible when logged in -->
   @if (authService.isLoggedIn()) {
     <a mat-button routerLink="/wishlist" routerLinkActive="active-link">
-      <mat-icon [matBadge]="wishlistCount()" [matBadgeHidden]="wishlistCount() === 0" matBadgeColor="accent">
+      <mat-icon
+        [matBadge]="wishlistCount()"
+        [matBadgeHidden]="wishlistCount() === 0"
+        matBadgeColor="accent"
+      >
         favorite
       </mat-icon>
       Wishlist

@@ -1,7 +1,7 @@
 .wishlist-container {
   max-width: 1100px;
   margin: 0 auto;
-  animation: fadeUp .4s var(--ease-out) both;
+  animation: fadeUp 0.4s var(--ease-out) both;
 }
 
 .page-title {
@@ -11,12 +11,21 @@
   margin-bottom: 32px;
   font-size: 1.5rem;
   font-weight: 600;
-  letter-spacing: -.03em;
+  letter-spacing: -0.03em;
 
-  mat-icon { color: #c85250; font-size: 24px; width: 24px; height: 24px; }
+  mat-icon {
+    color: #c85250;
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
 }
 
-.loading-container { display: flex; justify-content: center; padding: 80px; }
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 80px;
+}
 
 .empty-state {
   display: flex;
@@ -25,11 +34,23 @@
   padding: 80px 24px;
   gap: 14px;
   color: var(--text-3);
-  animation: fadeIn .3s var(--ease-out);
+  animation: fadeIn 0.3s var(--ease-out);
 
-  mat-icon { font-size: 48px; width: 48px; height: 48px; opacity: .25; }
-  h2 { font-size: 1.1rem; font-weight: 500; color: var(--text-2); }
-  p { margin: 0; font-size: 13px; }
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    opacity: 0.25;
+  }
+  h2 {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--text-2);
+  }
+  p {
+    margin: 0;
+    font-size: 13px;
+  }
 }
 
 .wishlist-grid {
@@ -43,10 +64,14 @@
   transition: transform var(--duration) var(--ease-out) !important;
 
   @for $i from 1 through 20 {
-    &:nth-child(#{$i}) { animation: fadeUp .4s var(--ease-out) #{$i * .05}s both; }
+    &:nth-child(#{$i}) {
+      animation: fadeUp 0.4s var(--ease-out) #{$i * 0.05}s both;
+    }
   }
 
-  &:hover { transform: translateY(-3px); }
+  &:hover {
+    transform: translateY(-3px);
+  }
 }
 
 .product-image {
@@ -54,16 +79,38 @@
   width: 100%;
   object-fit: cover;
   display: block;
-  transition: transform .35s var(--ease-out);
-  .wishlist-card:hover & { transform: scale(1.04); }
+  transition: transform 0.35s var(--ease-out);
+  .wishlist-card:hover & {
+    transform: scale(1.04);
+  }
 }
 
-.product-name { font-size: .9rem; font-weight: 500; color: var(--text-1); margin: 10px 0 4px; }
-.product-price { font-size: 1rem; font-weight: 600; color: var(--text-1); letter-spacing: -.02em; margin: 0 0 3px; }
-.added-date { font-size: 11px; color: var(--text-3); margin: 0; }
+.product-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-1);
+  margin: 10px 0 4px;
+}
+.product-price {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-1);
+  letter-spacing: -0.02em;
+  margin: 0 0 3px;
+}
+.added-date {
+  font-size: 11px;
+  color: var(--text-3);
+  margin: 0;
+}
 
 button[mat-icon-button].mat-warn {
-  color: rgba(200,82,80,0.4) !important;
-  transition: color var(--duration), transform var(--duration) var(--ease-out) !important;
-  &:hover { color: #c85250 !important; transform: scale(1.15) !important; }
+  color: rgba(200, 82, 80, 0.4) !important;
+  transition:
+    color var(--duration),
+    transform var(--duration) var(--ease-out) !important;
+  &:hover {
+    color: #c85250 !important;
+    transform: scale(1.15) !important;
+  }
 }

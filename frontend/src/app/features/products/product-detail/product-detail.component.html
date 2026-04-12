@@ -1,19 +1,21 @@
-@if (isLoading) {
+@if (isLoading()) {
   <div class="loading-container">
     <mat-spinner />
   </div>
-} @else if (product) {
+} @else if (product(); as product) {
   <div class="detail-container">
-
     <a mat-button routerLink="/products" class="back-btn">
       <mat-icon>arrow_back</mat-icon> Back to products
     </a>
 
     <div class="detail-layout">
-
       <div class="image-section">
-        <img [src]="product.imageUrl" [alt]="product.name"
-             class="product-image" onerror="this.src='https://placehold.co/600x400'">
+        <img
+          [src]="product.imageUrl"
+          [alt]="product.name"
+          class="product-image"
+          onerror="this.src = 'https://placehold.co/600x400'"
+        />
       </div>
 
       <div class="info-section">
@@ -29,7 +31,7 @@
           <span class="rating-label">/ 5.0</span>
         </div>
 
-        <p class="product-price">€{{ product.price | number:'1.2-2' }}</p>
+        <p class="product-price">€{{ product.price | number: '1.2-2' }}</p>
 
         <p class="product-description">{{ product.description }}</p>
 
@@ -44,17 +46,20 @@
             Add to cart
           </button>
 
-          <button mat-stroked-button
-                  [color]="wishlistService.isInWishlist(product.id) ? 'warn' : 'primary'"
-                  (click)="toggleWishlist()">
+          <button
+            mat-stroked-button
+            [color]="wishlistService.isInWishlist(product.id) ? 'warn' : 'primary'"
+            (click)="toggleWishlist()"
+          >
             <mat-icon>
               {{ wishlistService.isInWishlist(product.id) ? 'favorite' : 'favorite_border' }}
             </mat-icon>
-            {{ wishlistService.isInWishlist(product.id) ? 'Remove from wishlist' : 'Save to wishlist' }}
+            {{
+              wishlistService.isInWishlist(product.id) ? 'Remove from wishlist' : 'Save to wishlist'
+            }}
           </button>
         </div>
       </div>
-
     </div>
   </div>
 }

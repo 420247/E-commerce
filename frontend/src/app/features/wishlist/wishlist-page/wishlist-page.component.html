@@ -4,7 +4,7 @@
     My Wishlist
   </h1>
 
-  @if (isLoading) {
+  @if (isLoading()) {
     <div class="loading-container">
       <mat-spinner />
     </div>
@@ -13,21 +13,24 @@
       <mat-icon>favorite_border</mat-icon>
       <h2>Your wishlist is empty</h2>
       <p>Browse products and save the ones you like.</p>
-      <a mat-raised-button color="primary" routerLink="/products">
-        Browse products
-      </a>
+      <a mat-raised-button color="primary" routerLink="/products"> Browse products </a>
     </div>
   } @else {
     <div class="wishlist-grid">
       @for (item of wishlistService.wishlistItems(); track item.id) {
         <mat-card class="wishlist-card">
-          <img mat-card-image [src]="item.product.imageUrl" [alt]="item.product.name"
-               class="product-image" onerror="this.src='https://placehold.co/400x300'">
+          <img
+            mat-card-image
+            [src]="item.product.imageUrl"
+            [alt]="item.product.name"
+            class="product-image"
+            onerror="this.src = 'https://placehold.co/400x300'"
+          />
 
           <mat-card-content>
             <h3 class="product-name">{{ item.product.name }}</h3>
-            <p class="product-price">€{{ item.product.price | number:'1.2-2' }}</p>
-            <p class="added-date">Added {{ item.addedAt | date:'mediumDate' }}</p>
+            <p class="product-price">€{{ item.product.price | number: '1.2-2' }}</p>
+            <p class="added-date">Added {{ item.addedAt | date: 'mediumDate' }}</p>
           </mat-card-content>
 
           <mat-card-actions>

@@ -4,42 +4,48 @@
 
 /* ── Design tokens ─────────────────────────────────────────── */
 :root {
-  --bg:           #f8f7f5;
-  --surface:      #ffffff;
-  --surface-2:    #f1f0ed;
-  --border:       #e5e3de;
-  --border-2:     #d4d2cc;
-  --text-1:       #1c1b18;
-  --text-2:       #6b6963;
-  --text-3:       #9e9b96;
-  --accent:       #1c1b18;
-  --green:        #2d6a4f;
-  --green-bg:     #f0faf4;
-  --r-sm:         6px;
-  --r-md:         10px;
-  --r-lg:         16px;
-  --shadow:       0 1px 2px rgba(0,0,0,.05), 0 4px 16px rgba(0,0,0,.06);
-  --shadow-lg:    0 2px 4px rgba(0,0,0,.06), 0 12px 32px rgba(0,0,0,.1);
-  --ease-out:     cubic-bezier(0.16, 1, 0.3, 1);
-  --duration:     200ms;
+  --bg: #f8f7f5;
+  --surface: #ffffff;
+  --surface-2: #f1f0ed;
+  --border: #e5e3de;
+  --border-2: #d4d2cc;
+  --text-1: #1c1b18;
+  --text-2: #6b6963;
+  --text-3: #9e9b96;
+  --accent: #1c1b18;
+  --green: #2d6a4f;
+  --green-bg: #f0faf4;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 16px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 2px 4px rgba(0, 0, 0, 0.06), 0 12px 32px rgba(0, 0, 0, 0.1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration: 200ms;
 }
 
 html {
   height: 100%;
   color-scheme: light;
 
-  @include mat.theme((
-    color: (
-      primary:   mat.$azure-palette,
-      tertiary:  mat.$violet-palette,
-      theme-type: light,
-    ),
-    typography: 'Geist',
-    density: 0,
-  ));
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+        tertiary: mat.$violet-palette,
+        theme-type: light,
+      ),
+      typography: 'Geist',
+      density: 0,
+    )
+  );
 }
 
-*, *::before, *::after { box-sizing: border-box; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
@@ -52,7 +58,10 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
   margin: 0;
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -60,13 +69,23 @@ h1, h2, h3, h4 {
 
 /* ── Animations ───────────────────────────────────────────── */
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0);    }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* ── Material overrides ───────────────────────────────────── */
@@ -75,9 +94,10 @@ h1, h2, h3, h4 {
   border: 1px solid var(--border) !important;
   border-radius: var(--r-lg) !important;
   box-shadow: var(--shadow) !important;
-  transition: border-color var(--duration) var(--ease-out),
-              box-shadow var(--duration) var(--ease-out),
-              transform var(--duration) var(--ease-out);
+  transition:
+    border-color var(--duration) var(--ease-out),
+    box-shadow var(--duration) var(--ease-out),
+    transform var(--duration) var(--ease-out);
 
   &:hover {
     border-color: var(--border-2) !important;
@@ -86,12 +106,12 @@ h1, h2, h3, h4 {
 }
 
 .mat-mdc-form-field {
-  --mdc-outlined-text-field-outline-color:       var(--border);
+  --mdc-outlined-text-field-outline-color: var(--border);
   --mdc-outlined-text-field-hover-outline-color: var(--border-2);
   --mdc-outlined-text-field-focus-outline-color: var(--text-1);
-  --mdc-outlined-text-field-label-text-color:    var(--text-3);
-  --mdc-outlined-text-field-input-text-color:    var(--text-1);
-  --mdc-outlined-text-field-container-color:     var(--surface-2);
+  --mdc-outlined-text-field-label-text-color: var(--text-3);
+  --mdc-outlined-text-field-input-text-color: var(--text-1);
+  --mdc-outlined-text-field-container-color: var(--surface-2);
 }
 
 .mat-mdc-raised-button.mat-primary {
@@ -100,8 +120,9 @@ h1, h2, h3, h4 {
   border-radius: var(--r-sm) !important;
   font-weight: 500 !important;
   box-shadow: none !important;
-  transition: opacity var(--duration) var(--ease-out),
-              transform var(--duration) var(--ease-out) !important;
+  transition:
+    opacity var(--duration) var(--ease-out),
+    transform var(--duration) var(--ease-out) !important;
 
   &:hover:not(:disabled) {
     opacity: 0.85;
@@ -123,7 +144,7 @@ h1, h2, h3, h4 {
 }
 
 .mat-toolbar {
-  background: rgba(248,247,245,0.85) !important;
+  background: rgba(248, 247, 245, 0.85) !important;
   backdrop-filter: blur(16px) !important;
   border-bottom: 1px solid var(--border) !important;
   color: var(--text-1) !important;

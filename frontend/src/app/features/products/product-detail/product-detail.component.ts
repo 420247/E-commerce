@@ -1,10 +1,12 @@
 import {
-  Component,
-  OnInit,
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
+  Component,
+  DestroyRef,
+  OnInit,
   inject,
+  signal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -18,11 +20,7 @@ import { WishlistService } from '../../../core/services/wishlist.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Product } from '../../../shared/models/product.model';
 
-/**
- * Product detail page — displays full information for a single product.
- * The product ID is extracted from the URL via ActivatedRoute.
- * e.g. /products/5 → id = 5
- */
+/** Product detail page. Reads :id from the route and fetches the product. */
 @Component({
   selector: 'app-product-detail',
   standalone: true,
@@ -47,17 +45,12 @@ export class ProductDetailComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
   wishlistService = inject(WishlistService);
   authService = inject(AuthService);
-  private cdr = inject(ChangeDetectorRef);
+  private destroyRef = inject(DestroyRef);
 
-  product: Product | null = null;
-  isLoading = true;
-
- 
-
-  constructor() {}
+  product = signal<Product | null>(null);
+  isLoading = signal(true);
 
   ngOnInit() {
-    // snapshot.paramMap gives the route params at the time of navigation
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {
       this.router.navigate(['/products']);
@@ -67,40 +60,52 @@ export class ProductDetailComponent implements OnInit {
   }
 
   loadProduct(id: string) {
-    this.isLoading = true;
-    this.productService.getProductById(+id).subscribe({
-      next: (product) => {
-        this.product = product;
-        this.isLoading = false;
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.isLoading = false;
-        this.cdr.markForCheck();
-        this.snackBar.open('Product not found.', 'Close', { duration: 3000 });
-        this.router.navigate(['/products']);
-      },
-    });
+    this.isLoading.set(true);
+    this.productService
+      .getProductById(+id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (product) => {
+          this.product.set(product);
+          this.isLoading.set(false);
+        },
+        error: () => {
+          this.isLoading.set(false);
+          this.snackBar.open('Product not found.', 'Close', { duration: 3000 });
+          this.router.navigate(['/products']);
+        },
+      });
   }
+
   toggleWishlist() {
-    if (!this.product) return;
+    const current = this.product();
+    if (!current) return;
 
     if (!this.authService.isLoggedIn()) {
       const ref = this.snackBar.open('Please log in to save products.', 'Login', {
         duration: 3000,
       });
-      ref.onAction().subscribe(() => this.router.navigate(['/auth/login']));
+      ref
+        .onAction()
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(() => this.router.navigate(['/auth/login']));
       return;
     }
 
-    if (this.wishlistService.isInWishlist(this.product.id)) {
-      this.wishlistService.removeFromWishlist(this.product.id).subscribe({
-        next: () => this.snackBar.open('Removed from wishlist.', '', { duration: 2000 }),
-      });
+    if (this.wishlistService.isInWishlist(current.id)) {
+      this.wishlistService
+        .removeFromWishlist(current.id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => this.snackBar.open('Removed from wishlist.', '', { duration: 2000 }),
+        });
     } else {
-      this.wishlistService.addToWishlist(this.product.id).subscribe({
-        next: () => this.snackBar.open('Added to wishlist!', '', { duration: 2000 }),
-      });
+      this.wishlistService
+        .addToWishlist(current.id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => this.snackBar.open('Added to wishlist!', '', { duration: 2000 }),
+        });
     }
   }
 }

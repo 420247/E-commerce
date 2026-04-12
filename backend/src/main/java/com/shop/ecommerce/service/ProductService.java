@@ -4,6 +4,7 @@ import com.shop.ecommerce.model.Product;
 import com.shop.ecommerce.repository.ProductRepository;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -44,6 +45,6 @@ public class ProductService {
   public Product getProductById(Long id) {
     return productRepository
         .findById(id)
-        .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+        .orElseThrow(() -> new NoSuchElementException("Product not found with id: " + id));
   }
 }
