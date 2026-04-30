@@ -7,7 +7,9 @@
 A full-stack e-commerce application built with **Spring Boot**, **Angular 21**, and **PostgreSQL**.
 Features JWT authentication, wishlist management, and AI-powered product search via the **Claude API**.
 
-**Live demo:** [e-commerce-dmxk.onrender.com](https://e-commerce-dmxk.onrender.com)
+
+**Live demo:** [e-commerce-dmxk.onrender.com](https://e-commerce-dmxk.onrender.com):
+! DB spins up in ~60s on free tier. AI search requires active API token !
 
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
 ![Angular](https://img.shields.io/badge/Angular-21-DD0031?logo=angular&logoColor=white)
